@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f0f0f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Guiones">
+<link rel="manifest" href="manifest.json">
+<title>Guiones de Venta</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --surface: #141414;
+    --surface2: #1c1c1c;
+    --border: #2a2a2a;
+    --accent: #ff4d1c;
+    --accent2: #ff8c5a;
+    --text: #f0ede8;
+    --text2: #888;
+    --text3: #555;
+    --green: #2ecc71;
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Syne', sans-serif;
+    min-height: 100vh;
+    overscroll-behavior: none;
+  }
+
+  /* HEADER */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(10,10,10,.92);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border);
+    padding: 14px 20px 10px;
+  }
+
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .logo-icon {
+    width: 32px; height: 32px;
+    background: var(--accent);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  .logo-text {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -.02em;
+  }
+
+  .logo-sub {
+    font-size: 10px;
+    color: var(--text3);
+    font-family: 'DM Mono', monospace;
+    letter-spacing: .05em;
+  }
+
+  .add-btn {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Syne', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background .15s, transform .1s;
+  }
+  .add-btn:active { transform: scale(.96); background: #e03d0c; }
+
+  /* SEARCH */
+  .search-wrap {
+    position: relative;
+  }
+  .search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    color: var(--text3);
+    pointer-events: none;
+  }
+  .search {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 9px 12px 9px 36px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: 'Syne', sans-serif;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .search:focus { border-color: var(--accent); }
+  .search::placeholder { color: var(--text3); }
+
+  /* FILTER TABS */
+  .tabs-wrap {
+    padding: 0 20px;
+    overflow-x: auto;
+    display: flex;
+    gap: 8px;
+    padding-top: 12px;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+  }
+  .tabs-wrap::-webkit-scrollbar { display: none; }
+
+  .tab {
+    flex-shrink: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text2);
+    cursor: pointer;
+    font-family: 'Syne', sans-serif;
+    transition: all .15s;
+    white-space: nowrap;
+  }
+  .tab.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #fff;
+  }
+
+  /* CONTENT */
+  .content {
+    padding: 16px 20px 100px;
+  }
+
+  .section-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .12em;
+    color: var(--text3);
+    text-transform: uppercase;
+    margin: 20px 0 10px;
+    font-family: 'DM Mono', monospace;
+  }
+  .section-label:first-child { margin-top: 4px; }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-bottom: 10px;
+    overflow: hidden;
+    transition: border-color .2s;
+    animation: slideIn .3s ease forwards;
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  @keyframes slideIn {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card:active { border-color: var(--accent); }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px 10px;
+    cursor: pointer;
+  }
+
+  .card-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .card-title {
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding-right: 8px;
+  }
+
+  .card-tags {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .tag {
+    font-size: 10px;
+    font-family: 'DM Mono', monospace;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-weight: 500;
+  }
+  .tag-fase { background: rgba(255,77,28,.15); color: var(--accent2); }
+  .tag-atajo { background: rgba(255,255,255,.06); color: var(--text2); border: 1px solid var(--border); }
+
+  .card-chevron {
+    color: var(--text3);
+    font-size: 16px;
+    transition: transform .2s;
+    flex-shrink: 0;
+  }
+  .card.open .card-chevron { transform: rotate(180deg); }
+
+  .card-body {
+    display: none;
+    padding: 0 14px 14px;
+  }
+  .card.open .card-body { display: block; }
+
+  .card-text {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 13px;
+    line-height: 1.75;
+    color: var(--text);
+    white-space: pre-wrap;
+    word-break: break-word;
+    font-family: 'Syne', sans-serif;
+    margin-bottom: 10px;
+  }
+
+  .card-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-copy {
+    flex: 1;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 11px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: 'Syne', sans-serif;
+    cursor: pointer;
+    transition: background .15s, transform .1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .btn-copy:active { transform: scale(.97); }
+  .btn-copy.ok { background: var(--green); }
+
+  .btn-edit {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 14px;
+    color: var(--text2);
+    font-size: 13px;
+    font-family: 'Syne', sans-serif;
+    cursor: pointer;
+    transition: border-color .15s;
+  }
+  .btn-edit:active { border-color: var(--text2); }
+
+  .btn-del {
+    background: rgba(255,60,60,.1);
+    border: 1px solid rgba(255,60,60,.2);
+    border-radius: 10px;
+    padding: 11px 14px;
+    color: #ff6b6b;
+    font-size: 13px;
+    font-family: 'Syne', sans-serif;
+    cursor: pointer;
+  }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text3);
+  }
+  .empty-icon { font-size: 40px; margin-bottom: 12px; }
+  .empty-text { font-size: 14px; line-height: 1.6; }
+
+  /* MODAL */
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,.7);
+    z-index: 200;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .overlay.open { display: flex; }
+
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px 20px 0 0;
+    padding: 20px 20px 40px;
+    width: 100%;
+    max-width: 600px;
+    animation: slideUp .25s ease;
+  }
+  @keyframes slideUp {
+    from { transform: translateY(60px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .modal-handle {
+    width: 36px; height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 20px;
+  }
+
+  .modal-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+
+  .field { margin-bottom: 14px; }
+
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text2);
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    font-family: 'DM Mono', monospace;
+    margin-bottom: 6px;
+  }
+
+  .field input, .field select, .field textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    color: var(--text);
+    font-size: 14px;
+    font-family: 'Syne', sans-serif;
+    outline: none;
+    transition: border-color .2s;
+    -webkit-appearance: none;
+  }
+  .field input:focus, .field select, .field textarea:focus { border-color: var(--accent); }
+  .field textarea { min-height: 120px; resize: vertical; line-height: 1.6; }
+  .field select { cursor: pointer; }
+  .field select option { background: var(--surface2); }
+
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+  }
+
+  .btn-save {
+    flex: 1;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 700;
+    font-family: 'Syne', sans-serif;
+    cursor: pointer;
+  }
+  .btn-cancel {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 13px 18px;
+    color: var(--text2);
+    font-size: 15px;
+    font-family: 'Syne', sans-serif;
+    cursor: pointer;
+  }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--green);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    padding: 10px 20px;
+    border-radius: 30px;
+    z-index: 999;
+    transition: transform .3s cubic-bezier(.34,1.56,.64,1);
+    white-space: nowrap;
+    font-family: 'Syne', sans-serif;
+    pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* FAB install */
+  .fab-install {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    right: 20px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px 16px;
+    font-size: 12px;
+    color: var(--text2);
+    cursor: pointer;
+    z-index: 150;
+    font-family: 'Syne', sans-serif;
+    box-shadow: 0 8px 32px rgba(0,0,0,.4);
+    align-items: center;
+    gap: 8px;
+    transition: border-color .2s;
+  }
+  .fab-install.visible { display: flex; }
+  .fab-install:active { border-color: var(--accent); }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="logo">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <div class="logo-text">Guiones</div>
+        <div class="logo-sub">SALES CLOSER</div>
+      </div>
+    </div>
+    <button class="add-btn" onclick="openModal()">+ Nuevo</button>
+  </div>
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search" type="text" placeholder="Buscar guión..." oninput="render()" id="search">
+  </div>
+</div>
+
+<div class="tabs-wrap" id="tabs"></div>
+
+<div class="content" id="content"></div>
+
+<div class="overlay" id="overlay" onclick="closeModal(event)">
+  <div class="modal" id="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title" id="modal-title">Nuevo guión</div>
+    <div class="field">
+      <label>Título</label>
+      <input type="text" id="f-titulo" placeholder="Ej: Primer contacto">
+    </div>
+    <div class="field">
+      <label>Fase</label>
+      <select id="f-fase">
+        <option value="Primer contacto">Primer contacto</option>
+        <option value="Crear valor">Crear valor</option>
+        <option value="Precio y cierre">Precio y cierre</option>
+        <option value="Objeciones">Objeciones</option>
+        <option value="Seguimiento">Seguimiento</option>
+        <option value="General">General</option>
+      </select>
+    </div>
+    <div class="field">
+      <label>Atajo Gboard (opcional)</label>
+      <input type="text" id="f-atajo" placeholder="Ej: /p1">
+    </div>
+    <div class="field">
+      <label>Texto del guión</label>
+      <textarea id="f-texto" placeholder="Escribí el mensaje completo acá..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancelar</button>
+      <button class="btn-save" onclick="saveGuion()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">✓ Copiado</div>
+
+<div class="fab-install" id="fab-install" onclick="installApp()">
+  📲 Instalar app
+</div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+const DEFAULT_GUIONES = [
+  {
+    id: 1, titulo: '¿Está disponible? / ¿Cuánto sale?',
+    fase: 'Primer contacto', atajo: '/p1',
+    texto: '¡Hola! Sí, está disponible con envío a tu casa por Mercado Libre 😊 ¿Lo necesitás para limpiar auto, patio o terraza? Así te cuento si esta potencia te alcanza o si necesitás algo más.'
+  },
+  {
+    id: 2, titulo: 'Crear valor antes del precio',
+    fase: 'Crear valor', atajo: '/p2',
+    texto: 'Antes de darte el precio te cuento algo: la mayoría de las hidrolavadoras domésticas no pasan de 50 bar. Esta llega a 90 bar — la misma presión que usan en talleres. Más el sistema Autostop que cuida la bomba y ahorra agua. Todo incluido: manguera 5m, pistola, dispensador y 3 conectores. ¿Cuál era tu presupuesto aproximado?'
+  },
+  {
+    id: 3, titulo: 'Dar precio con contexto',
+    fase: 'Precio y cierre', atajo: '/p3',
+    texto: 'El precio es $85.999 con envío a tu domicilio por Mercado Libre — tiene protección al comprador y garantía de 12 meses de fábrica. 🔥 ¿La necesitás para esta semana? Te paso el link y en 24-72hs la tenés en tu casa 👇'
+  },
+  {
+    id: 4, titulo: 'Confirmar accesorios + cierre',
+    fase: 'Precio y cierre', atajo: '/p4',
+    texto: '¡Sí, viene completa! 🔥 Todo lo que ves en la foto incluido:\n✅ Pistola de pulverización\n✅ Manguera de 5 metros\n✅ Dispensador de detergente\n✅ Filtro + 3 conectores\n✅ Cable de 3 metros\n\nLlegás y enchufás, no necesitás comprar nada extra. ¿La necesitás para esta semana? Te paso el link y en 24-72hs la tenés en casa 👇'
+  },
+  {
+    id: 5, titulo: 'Objeción: "está caro"',
+    fase: 'Objeciones', atajo: '/p5',
+    texto: 'Entiendo. Pensalo así: un lavado de auto en un lavadero sale entre $3.000 y $5.000. Con esta te lo lavás vos en casa desde el primer día — en un mes ya se pagó sola. Más 12 meses de garantía de fábrica y la protección de Mercado Libre. Es inversión, no gasto 💪'
+  },
+  {
+    id: 6, titulo: 'Objeción: "lo voy a pensar"',
+    fase: 'Objeciones', atajo: '/p6',
+    texto: 'Claro, sin apuro. Te paso el link igual para que lo tenés guardado — este modelo está muy pedido ahora que arranca la temporada y el precio en ML puede cambiar cualquier día. Si sube, avisame y vemos qué hacemos 😉'
+  },
+  {
+    id: 7, titulo: 'Objeción: "vi una más barata"',
+    fase: 'Objeciones', atajo: '/p7',
+    texto: '¿Sabés cuántos bar tiene la que viste? La mayoría de las económicas no pasan de 50-60 bar y la bomba dura poco. Esta llega a 90 bar con autostop y garantía de fábrica. La diferencia la notás al primer uso — y no tenés que comprar otra en seis meses.'
+  },
+  {
+    id: 8, titulo: 'Objeción: "¿tenés local?"',
+    fase: 'Objeciones', atajo: '/p8',
+    texto: 'No tengo local — por eso el precio es más bajo. Trabajo con Mercado Libre: tiene protección al comprador, seguimiento del envío en tiempo real y garantía del fabricante. Si algo falla, ML te respalda. ¿Querés que te mande el link? 😊'
+  },
+  {
+    id: 9, titulo: 'Follow up — no responde',
+    fase: 'Seguimiento', atajo: '/p9',
+    texto: 'Hola! Te escribo porque la Pektra sigue disponible pero el precio en ML cambia seguido. Si todavía te interesa, avisame y te mando el link actualizado 👍'
+  },
+  {
+    id: 10, titulo: 'Follow up — dijo "ya te aviso"',
+    fase: 'Seguimiento', atajo: '/p10',
+    texto: 'Hola, ¿pudiste ver el link? Te pregunto porque este modelo tuvo movimiento hoy y no quiero que se te escape el precio 🔥'
+  },
+  {
+    id: 11, titulo: 'Mandar link sin presión',
+    fase: 'Seguimiento', atajo: '/p11',
+    texto: 'Perfecto, guardá el link para cuando estés listo — el precio puede cambiar cualquier día. Te lo mando igual así lo tenés a mano 👇\n[LINK DEL PRODUCTO]\nCualquier duda me avisás 😊'
+  }
+];
+
+let guiones = [];
+let editingId = null;
+let activeFilter = 'Todos';
+
+function load() {
+  try {
+    const saved = localStorage.getItem('guiones_v2');
+    guiones = saved ? JSON.parse(saved) : JSON.parse(JSON.stringify(DEFAULT_GUIONES));
+  } catch(e) {
+    guiones = JSON.parse(JSON.stringify(DEFAULT_GUIONES));
+  }
+}
+
+function save() {
+  localStorage.setItem('guiones_v2', JSON.stringify(guiones));
+}
+
+// ─── RENDER ─────────────────────────────────────────────────────────────────
+const FASES = ['Todos', 'Primer contacto', 'Crear valor', 'Precio y cierre', 'Objeciones', 'Seguimiento', 'General'];
+
+function renderTabs() {
+  const wrap = document.getElementById('tabs');
+  wrap.innerHTML = FASES.map(f =>
+    `<div class="tab ${f === activeFilter ? 'active' : ''}" onclick="setFilter('${f}')">${f}</div>`
+  ).join('');
+}
+
+function setFilter(f) {
+  activeFilter = f;
+  renderTabs();
+  render();
+}
+
+function render() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const content = document.getElementById('content');
+  const filtered = guiones.filter(g => {
+    const matchFilter = activeFilter === 'Todos' || g.fase === activeFilter;
+    const matchSearch = !q || g.titulo.toLowerCase().includes(q) || g.texto.toLowerCase().includes(q);
+    return matchFilter && matchSearch;
+  });
+
+  if (!filtered.length) {
+    content.innerHTML = `<div class="empty"><div class="empty-icon">🔍</div><div class="empty-text">No encontramos guiones.<br>Probá otra búsqueda o creá uno nuevo.</div></div>`;
+    return;
+  }
+
+  // Group by fase
+  const groups = {};
+  filtered.forEach(g => {
+    if (!groups[g.fase]) groups[g.fase] = [];
+    groups[g.fase].push(g);
+  });
+
+  let html = '';
+  Object.keys(groups).forEach(fase => {
+    html += `<div class="section-label">${fase}</div>`;
+    groups[fase].forEach((g, i) => {
+      html += `
+        <div class="card" id="card-${g.id}" style="animation-delay:${i * 40}ms">
+          <div class="card-head" onclick="toggleCard(${g.id})">
+            <div class="card-meta">
+              <div class="card-title">${g.titulo}</div>
+              <div class="card-tags">
+                <span class="tag tag-fase">${g.fase}</span>
+                ${g.atajo ? `<span class="tag tag-atajo">${g.atajo}</span>` : ''}
+              </div>
+            </div>
+            <span class="card-chevron">⌄</span>
+          </div>
+          <div class="card-body">
+            <div class="card-text" id="ct-${g.id}">${g.texto}</div>
+            <div class="card-actions">
+              <button class="btn-copy" id="btn-${g.id}" onclick="copiar(${g.id})">
+                <span>📋</span> Copiar
+              </button>
+              <button class="btn-edit" onclick="openEdit(${g.id})">✏️</button>
+              <button class="btn-del" onclick="deleteGuion(${g.id})">🗑</button>
+            </div>
+          </div>
+        </div>`;
+    });
+  });
+
+  content.innerHTML = html;
+}
+
+function toggleCard(id) {
+  const card = document.getElementById('card-' + id);
+  card.classList.toggle('open');
+}
+
+// ─── COPY ────────────────────────────────────────────────────────────────────
+function copiar(id) {
+  const el = document.getElementById('ct-' + id);
+  const btn = document.getElementById('btn-' + id);
+  const texto = el.innerText;
+
+  const copy = (text) => {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      return navigator.clipboard.writeText(text);
+    }
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;opacity:0;top:0;left:0';
+    document.body.appendChild(ta);
+    ta.focus(); ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    return Promise.resolve();
+  };
+
+  copy(texto).then(() => {
+    btn.innerHTML = '<span>✓</span> Copiado';
+    btn.classList.add('ok');
+    showToast('¡Copiado! Pegalo en Messenger 📲');
+    setTimeout(() => {
+      btn.innerHTML = '<span>📋</span> Copiar';
+      btn.classList.remove('ok');
+    }, 2500);
+  });
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ─── MODAL ───────────────────────────────────────────────────────────────────
+function openModal() {
+  editingId = null;
+  document.getElementById('modal-title').textContent = 'Nuevo guión';
+  document.getElementById('f-titulo').value = '';
+  document.getElementById('f-fase').value = 'Primer contacto';
+  document.getElementById('f-atajo').value = '';
+  document.getElementById('f-texto').value = '';
+  document.getElementById('overlay').classList.add('open');
+}
+
+function openEdit(id) {
+  const g = guiones.find(x => x.id === id);
+  if (!g) return;
+  editingId = id;
+  document.getElementById('modal-title').textContent = 'Editar guión';
+  document.getElementById('f-titulo').value = g.titulo;
+  document.getElementById('f-fase').value = g.fase;
+  document.getElementById('f-atajo').value = g.atajo || '';
+  document.getElementById('f-texto').value = g.texto;
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closeModal(e) {
+  if (!e || e.target === document.getElementById('overlay')) {
+    document.getElementById('overlay').classList.remove('open');
+  }
+}
+
+function saveGuion() {
+  const titulo = document.getElementById('f-titulo').value.trim();
+  const fase = document.getElementById('f-fase').value;
+  const atajo = document.getElementById('f-atajo').value.trim();
+  const texto = document.getElementById('f-texto').value.trim();
+
+  if (!titulo || !texto) {
+    showToast('⚠️ Completá título y texto');
+    return;
+  }
+
+  if (editingId) {
+    const idx = guiones.findIndex(x => x.id === editingId);
+    guiones[idx] = { ...guiones[idx], titulo, fase, atajo, texto };
+  } else {
+    const newId = Date.now();
+    guiones.push({ id: newId, titulo, fase, atajo, texto });
+  }
+
+  save();
+  closeModal();
+  render();
+  showToast(editingId ? '✓ Guión actualizado' : '✓ Guión creado');
+}
+
+function deleteGuion(id) {
+  if (!confirm('¿Eliminás este guión?')) return;
+  guiones = guiones.filter(g => g.id !== id);
+  save();
+  render();
+  showToast('Guión eliminado');
+}
+
+// ─── PWA INSTALL ─────────────────────────────────────────────────────────────
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('fab-install').classList.add('visible');
+});
+
+function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(() => {
+    deferredPrompt = null;
+    document.getElementById('fab-install').classList.remove('visible');
+  });
+}
+
+window.addEventListener('appinstalled', () => {
+  document.getElementById('fab-install').classList.remove('visible');
+  showToast('✓ App instalada 🎉');
+});
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+load();
+renderTabs();
+render();
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>

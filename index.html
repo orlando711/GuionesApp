@@ -11,13 +11,14 @@
 <title>Guiones de Venta</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root {
-  --bg:#0a0a0a;--surface:#141414;--surface2:#1c1c1c;--border:#2a2a2a;
-  --accent:#ff4d1c;--accent2:#ff8c5a;--text:#f0ede8;--text2:#888;--text3:#444;
-  --green:#2ecc71;--radius:14px;
-}
+:root{--bg:#0a0a0a;--surface:#141414;--surface2:#1c1c1c;--border:#2a2a2a;--accent:#ff4d1c;--accent2:#ff8c5a;--text:#f0ede8;--text2:#888;--text3:#444;--green:#2ecc71;--yellow:#f0a500;--radius:14px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overscroll-behavior:none}
+
+/* UPDATE BANNER */
+.update-banner{display:none;background:var(--yellow);color:#000;padding:10px 20px;font-size:13px;font-weight:600;text-align:center;cursor:pointer;position:sticky;top:0;z-index:200;align-items:center;justify-content:center;gap:8px}
+.update-banner.visible{display:flex}
+.update-banner:active{opacity:.85}
 
 .header{position:sticky;top:0;z-index:100;background:rgba(10,10,10,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:14px 20px 12px}
 .header-row{display:flex;align-items:center;gap:10px}
@@ -55,7 +56,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-he
 .product-count{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace}
 .product-price{font-size:11px;color:var(--accent2);font-family:'DM Mono',monospace}
 .product-actions{display:flex;gap:6px;flex-shrink:0}
-.btn-icon{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer;transition:border-color .15s}
+.btn-icon{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px;cursor:pointer}
 .btn-icon.danger{border-color:rgba(255,60,60,.2);color:#ff6b6b}
 .product-arrow{color:var(--text3);font-size:20px;flex-shrink:0}
 
@@ -80,7 +81,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-he
 .btn-sm{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;color:var(--text2);font-size:13px;font-family:'Syne',sans-serif;cursor:pointer}
 .btn-sm.danger{border-color:rgba(255,60,60,.2);color:#ff6b6b}
 
-.empty{text-align:center;padding:60px 20px;color:var(--text3)}
+.empty{text-align:center;padding:60px 20px}
 .empty-icon{font-size:40px;margin-bottom:12px}
 .empty-text{font-size:14px;line-height:1.6;color:var(--text2)}
 
@@ -110,9 +111,17 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-he
 .toast.success{background:var(--green);color:#fff;border-color:var(--green)}
 .fab-install{display:none;position:fixed;bottom:24px;right:20px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 16px;font-size:12px;color:var(--text2);cursor:pointer;z-index:150;font-family:'Syne',sans-serif;box-shadow:0 8px 32px rgba(0,0,0,.5);align-items:center;gap:8px}
 .fab-install.visible{display:flex}
+
+/* VERSION badge */
+.version-badge{text-align:center;padding:24px 0 0;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace}
 </style>
 </head>
 <body>
+
+<!-- BANNER DE ACTUALIZACIÓN -->
+<div class="update-banner" id="update-banner" onclick="applyUpdate()">
+  🔄 Nueva versión disponible — tocá para actualizar
+</div>
 
 <div class="header">
   <div class="header-row">
@@ -176,22 +185,70 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-he
 <div class="fab-install" id="fab-install" onclick="installApp()">📲 Instalar app</div>
 
 <script>
+// ─── APP VERSION ─────────────────────────────────────────────────────────────
+const APP_VERSION = '2.0.0';
+
+// ─── DATA ────────────────────────────────────────────────────────────────────
 const EMOJIS=['🔧','💻','📱','🏠','🚿','⚡','🔨','🛠','🌿','🚗','📦','🎯','💡','🔌','🏋️','🎮','🖨️','📷','🔑','🧹'];
 
-const DEFAULT_DATA={productos:[{id:'p1',nombre:'Hidrolavadora Pektra 1400W',precio:'$85.999',emoji:'🚿',guiones:[
-  {id:'g1',titulo:'¿Está disponible? / ¿Cuánto sale?',fase:'Primer contacto',atajo:'/h1',texto:'¡Hola! Sí, está disponible con envío a tu casa por Mercado Libre 😊 ¿Lo necesitás para limpiar auto, patio o terraza? Así te cuento si esta potencia te alcanza o si necesitás algo más.'},
-  {id:'g2',titulo:'Crear valor antes del precio',fase:'Crear valor',atajo:'/h2',texto:'Antes de darte el precio te cuento algo: la mayoría de las hidrolavadoras domésticas no pasan de 50 bar. Esta llega a 90 bar — la misma presión que usan en talleres. Más el sistema Autostop que cuida la bomba y ahorra agua. Todo incluido: manguera 5m, pistola, dispensador y 3 conectores. ¿Cuál era tu presupuesto aproximado?'},
-  {id:'g3',titulo:'Dar precio con contexto',fase:'Precio y cierre',atajo:'/h3',texto:'El precio es $85.999 con envío a tu domicilio por Mercado Libre — tiene protección al comprador y garantía de 12 meses de fábrica. 🔥 ¿La necesitás para esta semana? Te paso el link y en 24-72hs la tenés en tu casa 👇'},
-  {id:'g4',titulo:'Confirmar accesorios + cierre',fase:'Precio y cierre',atajo:'/h4',texto:'¡Sí, viene completa! 🔥 Todo lo que ves en la foto incluido:\n✅ Pistola de pulverización\n✅ Manguera de 5 metros\n✅ Dispensador de detergente\n✅ Filtro + 3 conectores\n✅ Cable de 3 metros\n\nLlegás y enchufás, no necesitás comprar nada extra. ¿La necesitás para esta semana? Te paso el link y en 24-72hs la tenés en casa 👇'},
-  {id:'g5',titulo:'Objeción: "está caro"',fase:'Objeciones',atajo:'/h5',texto:'Entiendo. Pensalo así: un lavado de auto en un lavadero sale entre $3.000 y $5.000. Con esta te lo lavás vos en casa desde el primer día — en un mes ya se pagó sola. Más 12 meses de garantía de fábrica y la protección de Mercado Libre. Es inversión, no gasto 💪'},
-  {id:'g6',titulo:'Objeción: "lo voy a pensar"',fase:'Objeciones',atajo:'/h6',texto:'Claro, sin apuro. Te paso el link igual para que lo tenés guardado — este modelo está muy pedido ahora que arranca la temporada y el precio en ML puede cambiar cualquier día. Si sube, avisame y vemos qué hacemos 😉'},
-  {id:'g7',titulo:'Objeción: "vi una más barata"',fase:'Objeciones',atajo:'/h7',texto:'¿Sabés cuántos bar tiene la que viste? La mayoría de las económicas no pasan de 50-60 bar y la bomba dura poco. Esta llega a 90 bar con autostop y garantía de fábrica. La diferencia la notás al primer uso — y no tenés que comprar otra en seis meses.'},
-  {id:'g8',titulo:'Objeción: "¿tenés local?"',fase:'Objeciones',atajo:'/h8',texto:'No tengo local — por eso el precio es más bajo. Trabajo con Mercado Libre: tiene protección al comprador, seguimiento del envío en tiempo real y garantía del fabricante. Si algo falla, ML te respalda. ¿Querés que te mande el link? 😊'},
-  {id:'g9',titulo:'Follow up — no responde',fase:'Seguimiento',atajo:'/h9',texto:'Hola! Te escribo porque la Pektra sigue disponible pero el precio en ML cambia seguido. Si todavía te interesa, avisame y te mando el link actualizado 👍'},
-  {id:'g10',titulo:'Follow up — dijo "ya te aviso"',fase:'Seguimiento',atajo:'/h10',texto:'Hola, ¿pudiste ver el link? Te pregunto porque este modelo tuvo movimiento hoy y no quiero que se te escape el precio 🔥'},
-  {id:'g11',titulo:'Mandar link sin presión',fase:'Seguimiento',atajo:'/h11',texto:'Perfecto, guardá el link para cuando estés listo — el precio puede cambiar cualquier día. Te lo mando igual así lo tenés a mano 👇\n[LINK DEL PRODUCTO]\nCualquier duda me avisás 😊'}
-]}]};
+const DEFAULT_DATA={
+  version: APP_VERSION,
+  productos:[
+  {id:'p1',nombre:'Hidrolavadora Pektra 1400W',precio:'$85.999',emoji:'🚿',guiones:[
+    {id:'g101',titulo:'Primer contacto',fase:'Primer contacto',atajo:'/h1',texto:'¡Hola! Sí, está disponible 😊 ¿La necesitás para auto, patio o terraza? Te cuento cuál es la mejor opción según tu uso.'},
+    {id:'g102',titulo:'Crear valor antes del precio',fase:'Crear valor',atajo:'/h2',texto:'Mirá, la mayoría de las hidrolavadoras domésticas no pasan de 50 bar. Esta llega a 90 bar — la misma presión que usan en los talleres. Más el sistema Autostop que cuida la bomba y ahorra agua. Todo incluido: manguera 5m, pistola, dispensador y 3 conectores. ¿Cuál era tu presupuesto?'},
+    {id:'g103',titulo:'Precio + entrega',fase:'Precio y cierre',atajo:'/h3',texto:'El precio es $85.999 y te llega directo a tu casa en 48 a 72hs — sin moverte de donde estás. Tiene garantía de 12 meses de fábrica. ¿La necesitás para el fin de semana?'},
+    {id:'g104',titulo:'Confirmar accesorios + cierre',fase:'Precio y cierre',atajo:'/h4',texto:'¡Sí, viene completa! 🔥\n✅ Pistola de pulverización\n✅ Manguera de 5 metros\n✅ Dispensador de detergente\n✅ Filtro + 3 conectores\n✅ Cable de 3 metros\n\nLlegás y enchufás. ¿Te la mando para el fin de semana?'},
+    {id:'g105',titulo:'Objeción: "está caro"',fase:'Objeciones',atajo:'/h5',texto:'Entiendo. Pensalo así: un lavado de auto en un lavadero sale entre $3.000 y $5.000. Con esta te lo lavás en casa desde el primer día — en un mes ya se pagó sola. Más 12 meses de garantía. Es inversión, no gasto 💪'},
+    {id:'g106',titulo:'Objeción: "lo voy a pensar"',fase:'Objeciones',atajo:'/h6',texto:'Claro, sin apuro. Te aviso que el precio puede cambiar — estos modelos suben seguido. ¿Querés que te reserve el precio de hoy y coordinamos la entrega cuando estés listo?'},
+    {id:'g107',titulo:'Objeción: "vi una más barata"',fase:'Objeciones',atajo:'/h7',texto:'¿Sabés cuántos bar tiene la que viste? La mayoría de las económicas no pasan de 50-60 bar y la bomba dura poco. Esta llega a 90 bar con autostop y garantía. La diferencia la notás al primer uso.'},
+    {id:'g108',titulo:'Objeción: no puede verla / retirarla',fase:'Objeciones',atajo:'/h8',texto:'Entiendo que preferirías verla antes. Lo que te puedo decir es que llega embalada de fábrica, en perfectas condiciones, directo a tu puerta en 48-72hs. Y si cuando la recibís no es lo que esperabas, tenés protección de compra para devolverla sin problema. Es más seguro que comprarlo en un local sin garantía 😊'},
+    {id:'g109',titulo:'Introducir Mercado Libre',fase:'Precio y cierre',atajo:'/h9',texto:'El pago y envío lo proceso a través de Mercado Libre — es la plataforma más segura del país, con protección al comprador y seguimiento del envío en tiempo real. ¿Tenés cuenta en ML o te ayudo a hacer la compra paso a paso?'},
+    {id:'g110',titulo:'Guía de compra ML paso a paso',fase:'Precio y cierre',atajo:'/h10',texto:'Te guío yo mismo, es muy simple:\n1️⃣ Abrís este link: [LINK]\n2️⃣ Tocás el botón verde "Comprar ahora"\n3️⃣ Si no tenés cuenta, tocás "Crear cuenta" — solo necesitás email y contraseña\n4️⃣ Elegís envío a domicilio y ponés tu dirección\n5️⃣ Elegís cómo pagar — tarjeta, débito o efectivo en Rapipago/Pago Fácil\n¿En qué paso te trabaste? Te ayudo ahí mismo 😊'},
+    {id:'g111',titulo:'Follow up',fase:'Seguimiento',atajo:'/h11',texto:'Hola! Te escribo porque la Pektra sigue disponible. Si todavía te interesa avisame y coordinamos la entrega para esta semana 👍'}
+  ]},
+  {id:'p2',nombre:'Notebook EXO 14"',precio:'$285.000',emoji:'💻',guiones:[
+    {id:'g201',titulo:'Primer contacto',fase:'Primer contacto',atajo:'/e1',texto:'¡Hola! Sí, está disponible 😊 ¿La necesitás para estudio, trabajo o home office? Te cuento si este modelo te viene bien.'},
+    {id:'g202',titulo:'Crear valor antes del precio',fase:'Crear valor',atajo:'/e2',texto:'Tiene SSD en lugar de disco rígido — eso significa que arranca en 10 segundos y nunca se traba. Windows 11 original instalado, lista para usar desde el primer día. Pantalla 14", Intel N4020, 4GB RAM. ¿Cuál era tu presupuesto?'},
+    {id:'g203',titulo:'Precio + entrega',fase:'Precio y cierre',atajo:'/e3',texto:'El precio es $285.000 y te llega a tu casa en 48-72hs, embalada de fábrica. Tiene garantía y si hay cualquier problema tenés protección de compra. ¿La necesitás para esta semana?'},
+    {id:'g204',titulo:'Confirmar specs + cierre',fase:'Precio y cierre',atajo:'/e4',texto:'¡Sí, viene lista para usar! ✅\n✅ Pantalla 14"\n✅ Intel N4020\n✅ 4GB RAM\n✅ SSD 128GB — arranque en segundos\n✅ Windows 11 original instalado\n\nEnchufás, prendés y arrancás. ¿La necesitás para esta semana?'},
+    {id:'g205',titulo:'Objeción: "está cara"',fase:'Objeciones',atajo:'/e5',texto:'Fijate que tiene SSD y Windows 11 original instalado — solo eso ya vale más de $50.000 por separado. En un local por este precio te dan disco rígido lento sin sistema. Esta es la mejor relación precio/calidad que vas a encontrar ahora mismo 💪'},
+    {id:'g206',titulo:'Objeción: "lo voy a pensar"',fase:'Objeciones',atajo:'/e6',texto:'Claro, sin apuro. El precio puede subir — los componentes electrónicos fluctúan mucho. ¿Querés que te reserve el precio de hoy?'},
+    {id:'g207',titulo:'Objeción: "vi una más barata"',fase:'Objeciones',atajo:'/e7',texto:'¿Tiene SSD o disco rígido? Esa es la diferencia clave. Con disco rígido va lento y se traba. Con SSD arranca en 10 segundos y no se cuelga nunca. Eso hace toda la diferencia para el día a día.'},
+    {id:'g208',titulo:'Objeción: no puede verla / retirarla',fase:'Objeciones',atajo:'/e8',texto:'Entiendo que preferirías verla antes. Te cuento que llega embalada de fábrica, sellada, en perfectas condiciones. Y si cuando la recibís no es lo que esperabas tenés protección de compra para devolverla. Es más seguro que muchos locales que no tienen garantía real 😊'},
+    {id:'g209',titulo:'Introducir Mercado Libre',fase:'Precio y cierre',atajo:'/e9',texto:'El pago y envío lo proceso por Mercado Libre — la plataforma más segura del país. Podés pagar con tarjeta en cuotas, débito o efectivo en Rapipago. ¿Tenés cuenta o te ayudo con la compra paso a paso?'},
+    {id:'g210',titulo:'Guía de compra ML paso a paso',fase:'Precio y cierre',atajo:'/e10',texto:'Te guío yo, es muy simple:\n1️⃣ Abrís este link: [LINK]\n2️⃣ Tocás "Comprar ahora"\n3️⃣ Si no tenés cuenta: "Crear cuenta" — solo email y contraseña\n4️⃣ Elegís envío a domicilio y ponés tu dirección\n5️⃣ Elegís cómo pagar — tarjeta, débito o Rapipago/Pago Fácil\n¿En qué paso te trabaste? Te ayudo ahí mismo 😊'},
+    {id:'g211',titulo:'Follow up',fase:'Seguimiento',atajo:'/e11',texto:'Hola! La notebook sigue disponible. Si todavía te interesa avisame y coordinamos la entrega para esta semana 👍'}
+  ]},
+  {id:'p3',nombre:'Hidrolavadora Trent 1600 PSI',precio:'$95.673',emoji:'⚡',guiones:[
+    {id:'g301',titulo:'Primer contacto',fase:'Primer contacto',atajo:'/t1',texto:'¡Hola! Sí, está disponible 😊 ¿La necesitás para auto, patio o terraza? Te cuento si esta potencia te alcanza.'},
+    {id:'g302',titulo:'Crear valor antes del precio',fase:'Crear valor',atajo:'/t2',texto:'Esta llega a 1600 PSI — casi el doble que las domésticas comunes que no pasan de 1000. Motor 1400W, limpia entre 20 y 40m² por hora. Certificación LENOR y protección IPX5. Kit completo incluido, enchufás y arrancás. ¿Cuál era tu presupuesto?'},
+    {id:'g303',titulo:'Precio + entrega',fase:'Precio y cierre',atajo:'/t3',texto:'El precio es $95.673 y te llega a tu casa en 48-72hs. Podés pagar en cuotas con tarjeta. Garantía incluida y si hay cualquier problema tenés protección de compra. ¿La necesitás para el fin de semana?'},
+    {id:'g304',titulo:'Confirmar kit + cierre',fase:'Precio y cierre',atajo:'/t4',texto:'¡Sí, viene con todo! 🔥\n✅ Pistola con lanza ajustable\n✅ Botella de detergente\n✅ Manguera de alta presión 3m\n✅ Cable 5m\n✅ Filtro + pin limpiador\n✅ Conector rápido 1/2"\n\nEnchufás y arrancás. ¿La necesitás para el fin de semana?'},
+    {id:'g305',titulo:'Objeción: "está cara"',fase:'Objeciones',atajo:'/t5',texto:'Fijate que tiene 1600 PSI y certificación LENOR — las económicas no tienen ninguna certificación y la bomba dura poco. Limpia 20 a 40m² por hora. En un mes de lavados de auto ya se pagó sola 💪'},
+    {id:'g306',titulo:'Objeción: "lo voy a pensar"',fase:'Objeciones',atajo:'/t6',texto:'Claro, sin apuro. El precio actual es de lanzamiento y puede subir. ¿Querés que te reserve el precio de hoy y coordinamos cuando estés listo?'},
+    {id:'g307',titulo:'Objeción: "vi una más barata"',fase:'Objeciones',atajo:'/t7',texto:'¿Sabés cuántos PSI tiene la que viste? La mayoría no llega a 1000 PSI. Esta tiene 1600 — casi el doble de presión. La diferencia se nota especialmente en grasa, moho y mugre acumulada.'},
+    {id:'g308',titulo:'Objeción: no puede verla / retirarla',fase:'Objeciones',atajo:'/t8',texto:'Entiendo que preferirías verla antes. Llega embalada de fábrica, en perfectas condiciones, directo a tu puerta en 48-72hs. Y si no es lo que esperabas tenés protección de compra para devolverla. Más seguro que un local sin garantía 😊'},
+    {id:'g309',titulo:'Introducir Mercado Libre',fase:'Precio y cierre',atajo:'/t9',texto:'El pago y envío lo proceso por Mercado Libre — podés pagar en cuotas con tarjeta, débito o efectivo en Rapipago. ¿Tenés cuenta o te ayudo paso a paso?'},
+    {id:'g310',titulo:'Guía de compra ML paso a paso',fase:'Precio y cierre',atajo:'/t10',texto:'Te guío yo, es muy simple:\n1️⃣ Abrís este link: [LINK]\n2️⃣ Tocás "Comprar ahora"\n3️⃣ Si no tenés cuenta: "Crear cuenta" — solo email y contraseña\n4️⃣ Elegís envío a domicilio y ponés tu dirección\n5️⃣ Elegís cómo pagar — tarjeta, débito o Rapipago/Pago Fácil\n¿En qué paso te trabaste? Te ayudo ahí mismo 😊'},
+    {id:'g311',titulo:'Follow up',fase:'Seguimiento',atajo:'/t11',texto:'Hola! La Trent sigue disponible. Si todavía te interesa avisame y coordinamos la entrega para esta semana 👍'}
+  ]},
+  {id:'p4',nombre:'Kit Herramientas 53 piezas',precio:'',emoji:'🔧',guiones:[
+    {id:'g401',titulo:'Primer contacto',fase:'Primer contacto',atajo:'/k1',texto:'¡Hola! Sí, está disponible 😊 ¿Lo necesitás para casa, auto o moto? Te cuento si este kit te viene bien.'},
+    {id:'g402',titulo:'Crear valor antes del precio',fase:'Crear valor',atajo:'/k2',texto:'Son 53 piezas de acero cromo-vanadio — el mismo material de las marcas profesionales. Trinquete con 72 dientes de liberación rápida, mango antideslizante ergonómico y maletín organizador incluido. No es el kit genérico de ferretería. ¿Cuál era tu presupuesto?'},
+    {id:'g403',titulo:'Precio + entrega',fase:'Precio y cierre',atajo:'/k3',texto:'El precio es con envío a tu casa en 48-72hs. Tiene garantía y protección de compra incluida. ¿Lo necesitás para esta semana?'},
+    {id:'g404',titulo:'Confirmar contenido + cierre',fase:'Precio y cierre',atajo:'/k4',texto:'¡Sí, son 53 piezas completas! 🔧\n✅ Llave de trinquete 72 dientes\n✅ Acero cromo-vanadio profesional\n✅ Mango antideslizante ergonómico\n✅ Liberación rápida con botón pulsador\n✅ Maletín organizador incluido\n\nAbrís la caja y arrancás. ¿Lo necesitás para esta semana?'},
+    {id:'g405',titulo:'Objeción: "está caro"',fase:'Objeciones',atajo:'/k5',texto:'Son 53 piezas de cromo-vanadio con maletín — comprar cada herramienta por separado te sale el triple. Es el kit para todo: auto, moto, casa. Una sola compra para años 💪'},
+    {id:'g406',titulo:'Objeción: "lo voy a pensar"',fase:'Objeciones',atajo:'/k6',texto:'Claro, sin apuro. Este tipo de kits se mueve rápido y el precio puede cambiar. ¿Querés que te reserve el precio de hoy?'},
+    {id:'g407',titulo:'Objeción: "vi uno más barato"',fase:'Objeciones',atajo:'/k7',texto:'¿Es cromo-vanadio o acero común? Con acero común las piezas se doblan o rompen con el primer uso fuerte. El cromo-vanadio dura años. A largo plazo este kit es mucho más barato.'},
+    {id:'g408',titulo:'Objeción: no puede verlo / retirarlo',fase:'Objeciones',atajo:'/k8',texto:'Entiendo que preferirías verlo antes. Llega embalado de fábrica, en perfectas condiciones, directo a tu puerta en 48-72hs. Y si no es lo que esperabas tenés protección de compra para devolverlo 😊'},
+    {id:'g409',titulo:'Introducir Mercado Libre',fase:'Precio y cierre',atajo:'/k9',texto:'El pago y envío lo proceso por Mercado Libre — podés pagar con tarjeta en cuotas, débito o efectivo en Rapipago. ¿Tenés cuenta o te ayudo paso a paso?'},
+    {id:'g410',titulo:'Guía de compra ML paso a paso',fase:'Precio y cierre',atajo:'/k10',texto:'Te guío yo, es muy simple:\n1️⃣ Abrís este link: [LINK]\n2️⃣ Tocás "Comprar ahora"\n3️⃣ Si no tenés cuenta: "Crear cuenta" — solo email y contraseña\n4️⃣ Elegís envío a domicilio y ponés tu dirección\n5️⃣ Elegís cómo pagar — tarjeta, débito o Rapipago/Pago Fácil\n¿En qué paso te trabaste? Te ayudo ahí mismo 😊'},
+    {id:'g411',titulo:'Follow up',fase:'Seguimiento',atajo:'/k11',texto:'Hola! El kit de herramientas sigue disponible. Si todavía te interesa avisame y coordinamos la entrega para esta semana 👍'}
+  ]}
+]};
 
+// ─── STATE ───────────────────────────────────────────────────────────────────
 let data={productos:[]};
 let currentProductoId=null;
 let editingGuionId=null;
@@ -200,18 +257,71 @@ let activeFilter='Todos';
 let selectedEmoji='📦';
 
 function load(){
-  try{const s=localStorage.getItem('guiones_multi_v1');data=s?JSON.parse(s):JSON.parse(JSON.stringify(DEFAULT_DATA));}
-  catch(e){data=JSON.parse(JSON.stringify(DEFAULT_DATA));}
+  try{
+    const s=localStorage.getItem('guiones_multi_v1');
+    if(s){
+      const saved=JSON.parse(s);
+      // Si la versión guardada es anterior, merge productos nuevos
+      if(!saved.version || saved.version !== APP_VERSION){
+        // Conservar guiones custom del usuario, agregar productos nuevos del DEFAULT
+        const savedIds=saved.productos.map(p=>p.id);
+        const newProds=DEFAULT_DATA.productos.filter(p=>!savedIds.includes(p.id));
+        saved.productos=[...saved.productos,...newProds];
+        saved.version=APP_VERSION;
+        data=saved;
+        save();
+      } else {
+        data=saved;
+      }
+    } else {
+      data=JSON.parse(JSON.stringify(DEFAULT_DATA));
+    }
+  }catch(e){data=JSON.parse(JSON.stringify(DEFAULT_DATA));}
 }
+
 function save(){localStorage.setItem('guiones_multi_v1',JSON.stringify(data));}
 
+// ─── SERVICE WORKER & AUTO UPDATE ────────────────────────────────────────────
+let newWorker=null;
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').then(reg=>{
+    // Chequear actualización al abrir
+    reg.update();
+
+    reg.addEventListener('updatefound',()=>{
+      newWorker=reg.installing;
+      newWorker.addEventListener('statechange',()=>{
+        if(newWorker.state==='installed' && navigator.serviceWorker.controller){
+          // Hay nueva versión lista
+          document.getElementById('update-banner').classList.add('visible');
+        }
+      });
+    });
+  });
+
+  // Cuando el SW toma control, recargar la página
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    window.location.reload();
+  });
+}
+
+function applyUpdate(){
+  if(newWorker){
+    newWorker.postMessage('SKIP_WAITING');
+  } else {
+    window.location.reload();
+  }
+}
+
+// ─── NAVIGATION ──────────────────────────────────────────────────────────────
 function goHome(){
   currentProductoId=null;activeFilter='Todos';
   document.getElementById('search').value='';
   document.getElementById('back-btn').classList.remove('visible');
   document.getElementById('action-btn').textContent='+ Producto';
   document.getElementById('tabs').style.display='none';
-  document.getElementById('header-center').innerHTML='<div class="logo-text">⚡ Guiones</div><div class="logo-sub">SALES CLOSER</div>';
+  document.getElementById('header-center').innerHTML='<div class="logo-text">⚡ Guiones</div><div class="logo-sub">SALES CLOSER v'+APP_VERSION+'</div>';
   render();
 }
 
@@ -222,12 +332,17 @@ function goProducto(id){
   document.getElementById('action-btn').textContent='+ Guión';
   document.getElementById('tabs').style.display='flex';
   const p=data.productos.find(x=>x.id===id);
-  document.getElementById('header-center').innerHTML=`<div class="header-title">${p.emoji} ${p.nombre}</div><div class="header-sub">${p.precio||'Sin precio'} · ${p.guiones.length} guiones</div>`;
+  updateHeaderProducto(p);
   renderTabs(p);render();
+}
+
+function updateHeaderProducto(p){
+  document.getElementById('header-center').innerHTML=`<div class="header-title">${p.emoji} ${p.nombre}</div><div class="header-sub">${p.precio||'Sin precio'} · ${p.guiones.length} guiones</div>`;
 }
 
 function handleAction(){if(!currentProductoId)openModalProducto();else openModalGuion();}
 
+// ─── RENDER ──────────────────────────────────────────────────────────────────
 function renderTabs(p){
   const wrap=document.getElementById('tabs');
   const fases=['Todos',...new Set(p.guiones.map(g=>g.fase))];
@@ -241,7 +356,7 @@ function setFilter(f){
 }
 
 function render(){
-  if(!currentProductoId){renderHome();}
+  if(!currentProductoId)renderHome();
   else{const p=data.productos.find(x=>x.id===currentProductoId);if(p)renderGuiones(p);}
 }
 
@@ -270,7 +385,8 @@ function renderHome(){
       <span class="product-arrow">›</span>
     </div>`;
   });
-  html+='</div>';c.innerHTML=html;
+  html+=`</div><div class="version-badge">v${APP_VERSION}</div>`;
+  c.innerHTML=html;
 }
 
 function renderGuiones(p){
@@ -317,6 +433,7 @@ function renderGuiones(p){
 
 function toggleCard(id){document.getElementById('card-'+id)?.classList.toggle('open');}
 
+// ─── COPY ────────────────────────────────────────────────────────────────────
 function copiar(id){
   const el=document.getElementById('ct-'+id);
   const btn=document.getElementById('btn-'+id);
@@ -334,6 +451,7 @@ function copiar(id){
   });
 }
 
+// ─── MODALES ─────────────────────────────────────────────────────────────────
 function buildEmojiGrid(sel){
   document.getElementById('emoji-grid').innerHTML=EMOJIS.map(e=>
     `<div class="emoji-opt ${e===sel?'selected':''}" onclick="selectEmoji('${e}',this)">${e}</div>`
@@ -344,7 +462,6 @@ function selectEmoji(e,el){
   document.querySelectorAll('.emoji-opt').forEach(x=>x.classList.remove('selected'));
   el.classList.add('selected');
 }
-
 function openModalProducto(){
   editingProductoId=null;selectedEmoji='📦';
   document.getElementById('mp-title').textContent='Nuevo producto';
@@ -373,8 +490,7 @@ function saveProducto(){
   if(editingProductoId){
     const p=data.productos.find(x=>x.id===editingProductoId);
     p.nombre=nombre;p.precio=precio;p.emoji=selectedEmoji;
-    if(currentProductoId===editingProductoId)
-      document.getElementById('header-center').innerHTML=`<div class="header-title">${p.emoji} ${p.nombre}</div><div class="header-sub">${p.precio||'Sin precio'} · ${p.guiones.length} guiones</div>`;
+    if(currentProductoId===editingProductoId)updateHeaderProducto(p);
   }else{
     data.productos.push({id:'p'+Date.now(),nombre,precio,emoji:selectedEmoji,guiones:[]});
   }
@@ -387,7 +503,6 @@ function deleteProducto(id){
   data.productos=data.productos.filter(x=>x.id!==id);
   save();render();showToast('Producto eliminado');
 }
-
 function openModalGuion(){
   editingGuionId=null;
   document.getElementById('mg-title').textContent='Nuevo guión';
@@ -426,8 +541,7 @@ function saveGuion(){
     p.guiones.push({id:'g'+Date.now(),titulo,fase,atajo,texto});
   }
   save();document.getElementById('overlay-guion').classList.remove('open');
-  document.getElementById('header-center').innerHTML=`<div class="header-title">${p.emoji} ${p.nombre}</div><div class="header-sub">${p.precio||'Sin precio'} · ${p.guiones.length} guiones</div>`;
-  renderTabs(p);render();
+  updateHeaderProducto(p);renderTabs(p);render();
   showToast(editingGuionId?'✓ Guión actualizado':'✓ Guión creado',true);
 }
 function deleteGuion(id){
@@ -437,6 +551,7 @@ function deleteGuion(id){
   save();render();showToast('Guión eliminado');
 }
 
+// ─── TOAST ───────────────────────────────────────────────────────────────────
 function showToast(msg,success=false){
   const t=document.getElementById('toast');
   t.textContent=msg;t.className='toast'+(success?' success':'');
@@ -444,13 +559,26 @@ function showToast(msg,success=false){
   setTimeout(()=>t.classList.remove('show'),2500);
 }
 
+// ─── PWA INSTALL ─────────────────────────────────────────────────────────────
 let deferredPrompt=null;
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;document.getElementById('fab-install').classList.add('visible');});
-function installApp(){if(!deferredPrompt)return;deferredPrompt.prompt();deferredPrompt.userChoice.then(()=>{deferredPrompt=null;document.getElementById('fab-install').classList.remove('visible');});}
-window.addEventListener('appinstalled',()=>{document.getElementById('fab-install').classList.remove('visible');showToast('✓ App instalada 🎉',true);});
+window.addEventListener('beforeinstallprompt',e=>{
+  e.preventDefault();deferredPrompt=e;
+  document.getElementById('fab-install').classList.add('visible');
+});
+function installApp(){
+  if(!deferredPrompt)return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(()=>{deferredPrompt=null;document.getElementById('fab-install').classList.remove('visible');});
+}
+window.addEventListener('appinstalled',()=>{
+  document.getElementById('fab-install').classList.remove('visible');
+  showToast('✓ App instalada 🎉',true);
+});
 
-load();render();
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(()=>{});
+// ─── INIT ────────────────────────────────────────────────────────────────────
+load();
+document.getElementById('header-center').innerHTML='<div class="logo-text">⚡ Guiones</div><div class="logo-sub">SALES CLOSER v'+APP_VERSION+'</div>';
+render();
 </script>
 </body>
 </html>

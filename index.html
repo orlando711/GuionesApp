@@ -443,15 +443,15 @@ async function loadProductos() {
 
   const guionesData = guiones || [];
 
-  // Combinar: cada producto con sus guiones
+  // Combinar: cada producto con sus guiones (IDs son UUID strings)
   productos = prods.map(p => ({
     ...p,
-    guiones: guionesData.filter(g => g.producto_id === p.id)
+    guiones: guionesData.filter(g => String(g.producto_id) === String(p.id))
   }));
 }
 
 async function dbSaveProducto(p) {
-  if (p.id && typeof p.id === 'number') {
+  if (p.id && p.id !== null) {
     const { data } = await sb.from('productos').update({
       nombre: p.nombre, precio: p.precio, emoji: p.emoji
     }).eq('id', p.id).eq('user_id', currentUser.id).select().single();
@@ -471,7 +471,7 @@ async function dbDeleteProducto(id) {
 }
 
 async function dbSaveGuion(g, productoId) {
-  if (g.id && typeof g.id === 'number') {
+  if (g.id && g.id !== null) {
     const { data } = await sb.from('guiones').update({
       titulo: g.titulo, fase: g.fase, atajo: g.atajo, texto: g.texto
     }).eq('id', g.id).eq('user_id', currentUser.id).select().single();

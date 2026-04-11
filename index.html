@@ -10,19 +10,43 @@
 <link rel="manifest" href="manifest.json">
 <title>Guiones de Venta</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{--bg:#0a0a0a;--surface:#141414;--surface2:#1c1c1c;--border:#2a2a2a;--accent:#ff4d1c;--accent2:#ff8c5a;--text:#f0ede8;--text2:#888;--text3:#444;--green:#2ecc71;--yellow:#f0a500;--radius:14px}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;overscroll-behavior:none}
 
+/* LOGIN SCREEN */
+.login-screen{display:none;position:fixed;inset:0;background:var(--bg);z-index:500;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px}
+.login-screen.visible{display:flex}
+.login-logo{font-size:48px;margin-bottom:16px}
+.login-title{font-size:28px;font-weight:800;letter-spacing:-.03em;margin-bottom:8px;text-align:center}
+.login-sub{font-size:14px;color:var(--text2);text-align:center;line-height:1.6;margin-bottom:48px;max-width:280px}
+.login-features{display:flex;flex-direction:column;gap:10px;margin-bottom:48px;width:100%;max-width:320px}
+.login-feature{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 16px}
+.login-feature-icon{font-size:20px;flex-shrink:0}
+.login-feature-text{font-size:13px;color:var(--text2);line-height:1.4}
+.login-feature-text strong{color:var(--text);display:block;font-size:14px;margin-bottom:2px}
+.btn-google{display:flex;align-items:center;justify-content:center;gap:12px;width:100%;max-width:320px;background:#fff;color:#1a1a1a;border:none;border-radius:12px;padding:14px 20px;font-size:15px;font-weight:700;font-family:'Syne',sans-serif;cursor:pointer;transition:transform .1s,box-shadow .15s;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.btn-google:active{transform:scale(.97)}
+.btn-google svg{flex-shrink:0}
+.login-terms{font-size:11px;color:var(--text3);text-align:center;margin-top:16px;max-width:280px;line-height:1.6}
+
+/* LOADING */
+.loading-screen{display:none;position:fixed;inset:0;background:var(--bg);z-index:400;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.loading-screen.visible{display:flex}
+.loading-spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:13px;color:var(--text2);font-family:'DM Mono',monospace}
+
 /* UPDATE BANNER */
 .update-banner{display:none;background:var(--yellow);color:#000;padding:10px 20px;font-size:13px;font-weight:600;text-align:center;cursor:pointer;position:sticky;top:0;z-index:200;align-items:center;justify-content:center;gap:8px}
 .update-banner.visible{display:flex}
-.update-banner:active{opacity:.85}
 
+/* HEADER */
 .header{position:sticky;top:0;z-index:100;background:rgba(10,10,10,.94);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:1px solid var(--border);padding:14px 20px 12px}
 .header-row{display:flex;align-items:center;gap:10px}
-.back-btn{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 12px;color:var(--text2);font-size:13px;font-family:'Syne',sans-serif;cursor:pointer;display:none;align-items:center;gap:5px;white-space:nowrap;transition:border-color .15s}
+.back-btn{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:7px 12px;color:var(--text2);font-size:13px;font-family:'Syne',sans-serif;cursor:pointer;display:none;align-items:center;gap:5px;white-space:nowrap}
 .back-btn.visible{display:flex}
 .back-btn:active{border-color:var(--accent)}
 .header-center{flex:1;min-width:0}
@@ -30,8 +54,11 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-he
 .logo-sub{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace;letter-spacing:.05em}
 .header-title{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .header-sub{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace}
-.action-btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;font-family:'Syne',sans-serif;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:background .15s,transform .1s;flex-shrink:0}
+.header-right{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.action-btn{background:var(--accent);color:#fff;border:none;border-radius:10px;padding:8px 14px;font-size:13px;font-weight:600;font-family:'Syne',sans-serif;cursor:pointer;display:flex;align-items:center;gap:5px;white-space:nowrap;transition:background .15s,transform .1s}
 .action-btn:active{transform:scale(.96);background:#e03d0c}
+.avatar{width:32px;height:32px;border-radius:50%;border:1.5px solid var(--border);cursor:pointer;object-fit:cover;background:var(--surface2);display:flex;align-items:center;justify-content:center;font-size:14px;overflow:hidden;flex-shrink:0}
+.avatar img{width:100%;height:100%;object-fit:cover}
 .search-wrap{position:relative;margin-top:10px}
 .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--text3);pointer-events:none}
 .search{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:9px 12px 9px 36px;color:var(--text);font-size:14px;font-family:'Syne',sans-serif;outline:none;transition:border-color .2s}
@@ -46,6 +73,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-he
 .section-label{font-size:10px;font-weight:700;letter-spacing:.12em;color:var(--text3);text-transform:uppercase;margin:20px 0 10px;font-family:'DM Mono',monospace}
 .section-label:first-child{margin-top:4px}
 
+/* PRODUCTS */
 .products-grid{display:flex;flex-direction:column;gap:10px}
 .product-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;cursor:pointer;transition:border-color .2s,transform .1s;animation:slideIn .3s ease forwards;opacity:0;transform:translateY(8px);display:flex;align-items:center;gap:14px}
 .product-card:active{transform:scale(.98);border-color:var(--accent)}
@@ -60,6 +88,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-he
 .btn-icon.danger{border-color:rgba(255,60,60,.2);color:#ff6b6b}
 .product-arrow{color:var(--text3);font-size:20px;flex-shrink:0}
 
+/* CARDS */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:10px;overflow:hidden;transition:border-color .2s;animation:slideIn .3s ease forwards;opacity:0;transform:translateY(8px)}
 @keyframes slideIn{to{opacity:1;transform:translateY(0)}}
 .card-head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 10px;cursor:pointer}
@@ -85,6 +114,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-he
 .empty-icon{font-size:40px;margin-bottom:12px}
 .empty-text{font-size:14px;line-height:1.6;color:var(--text2)}
 
+/* MODALS */
 .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);align-items:flex-end;justify-content:center}
 .overlay.open{display:flex}
 .modal{background:var(--surface);border:1px solid var(--border);border-radius:20px 20px 0 0;padding:20px 20px 44px;width:100%;max-width:600px;animation:slideUp .25s ease;max-height:92vh;overflow-y:auto}
@@ -106,31 +136,78 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-he
 .btn-save:active{background:#e03d0c}
 .btn-cancel{background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:13px 18px;color:var(--text2);font-size:15px;font-family:'Syne',sans-serif;cursor:pointer}
 
+/* USER MENU */
+.user-menu{display:none;position:fixed;top:70px;right:20px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:8px;z-index:300;min-width:220px;box-shadow:0 8px 32px rgba(0,0,0,.5);animation:fadeIn .15s ease}
+.user-menu.open{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.user-info{padding:10px 12px 14px;border-bottom:1px solid var(--border);margin-bottom:6px}
+.user-name{font-size:14px;font-weight:600;margin-bottom:2px}
+.user-email{font-size:11px;color:var(--text2);font-family:'DM Mono',monospace}
+.menu-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;cursor:pointer;font-size:13px;color:var(--text2);transition:background .15s}
+.menu-item:active{background:var(--surface2)}
+.menu-item.danger{color:#ff6b6b}
+
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#222;border:1px solid var(--border);color:var(--text);font-size:13px;font-weight:600;padding:10px 20px;border-radius:30px;z-index:999;transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;font-family:'Syne',sans-serif;pointer-events:none}
 .toast.show{transform:translateX(-50%) translateY(0)}
 .toast.success{background:var(--green);color:#fff;border-color:var(--green)}
+.toast.error{background:#c0392b;color:#fff;border-color:#c0392b}
+
 .fab-install{display:none;position:fixed;bottom:24px;right:20px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 16px;font-size:12px;color:var(--text2);cursor:pointer;z-index:150;font-family:'Syne',sans-serif;box-shadow:0 8px 32px rgba(0,0,0,.5);align-items:center;gap:8px}
 .fab-install.visible{display:flex}
-
-/* VERSION badge */
 .version-badge{text-align:center;padding:24px 0 0;font-size:10px;color:var(--text3);font-family:'DM Mono',monospace}
 </style>
 </head>
 <body>
 
-<!-- BANNER DE ACTUALIZACIÓN -->
+<!-- LOGIN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-logo">⚡</div>
+  <div class="login-title">Guiones de Venta</div>
+  <div class="login-sub">Tu asistente de ventas para Facebook Marketplace</div>
+  <div class="login-features">
+    <div class="login-feature">
+      <div class="login-feature-icon">📋</div>
+      <div class="login-feature-text"><strong>Guiones listos</strong>Copiá mensajes con un toque y pegá en Messenger</div>
+    </div>
+    <div class="login-feature">
+      <div class="login-feature-icon">☁️</div>
+      <div class="login-feature-text"><strong>Sincronizado</strong>Tus guiones disponibles en celular y PC</div>
+    </div>
+    <div class="login-feature">
+      <div class="login-feature-icon">🔒</div>
+      <div class="login-feature-text"><strong>Privado</strong>Solo vos ves tu información</div>
+    </div>
+  </div>
+  <button class="btn-google" onclick="loginGoogle()">
+    <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+    Continuar con Google
+  </button>
+  <div class="login-terms">Al continuar aceptás que tus datos se guardan de forma segura y privada</div>
+</div>
+
+<!-- LOADING -->
+<div class="loading-screen" id="loading-screen">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">Cargando...</div>
+</div>
+
+<!-- UPDATE BANNER -->
 <div class="update-banner" id="update-banner" onclick="applyUpdate()">
   🔄 Nueva versión disponible — tocá para actualizar
 </div>
 
-<div class="header">
+<!-- HEADER -->
+<div class="header" id="main-header" style="display:none">
   <div class="header-row">
     <button class="back-btn" id="back-btn" onclick="goHome()">← Productos</button>
     <div class="header-center" id="header-center">
       <div class="logo-text">⚡ Guiones</div>
       <div class="logo-sub">SALES CLOSER</div>
     </div>
-    <button class="action-btn" id="action-btn" onclick="handleAction()">+ Producto</button>
+    <div class="header-right">
+      <button class="action-btn" id="action-btn" onclick="handleAction()">+ Producto</button>
+      <div class="avatar" id="avatar" onclick="toggleUserMenu()">👤</div>
+    </div>
   </div>
   <div class="search-wrap">
     <span class="search-icon">🔍</span>
@@ -139,7 +216,17 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-he
   <div class="tabs-wrap" id="tabs" style="display:none"></div>
 </div>
 
-<div class="content" id="content"></div>
+<div class="content" id="content" style="display:none"></div>
+
+<!-- USER MENU -->
+<div class="user-menu" id="user-menu">
+  <div class="user-info">
+    <div class="user-name" id="menu-name">—</div>
+    <div class="user-email" id="menu-email">—</div>
+  </div>
+  <div class="menu-item" onclick="closeUserMenu()">✕ &nbsp;Cerrar menú</div>
+  <div class="menu-item danger" onclick="logout()">🚪 &nbsp;Cerrar sesión</div>
+</div>
 
 <!-- MODAL PRODUCTO -->
 <div class="overlay" id="overlay-producto" onclick="closeModalProducto(event)">
@@ -185,234 +272,335 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-he
 <div class="fab-install" id="fab-install" onclick="installApp()">📲 Instalar app</div>
 
 <script>
-// ─── APP VERSION ─────────────────────────────────────────────────────────────
-const APP_VERSION = '2.0.0';
+const APP_VERSION = '3.0.0';
+const SUPABASE_URL = 'https://lhogzvgjwxwqtuerhorg.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxob2d6dmdqd3h3cXR1ZXJob3JnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MjExNTIsImV4cCI6MjA5MTI5NzE1Mn0.QI673m9eu1oyAJ6PPaVCa6ocuReNsKTdcsfr68EvlcA';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// ─── DATA ────────────────────────────────────────────────────────────────────
 const EMOJIS=['🔧','💻','📱','🏠','🚿','⚡','🔨','🛠','🌿','🚗','📦','🎯','💡','🔌','🏋️','🎮','🖨️','📷','🔑','🧹'];
 
-const DEFAULT_DATA={
-  version: APP_VERSION,
-  productos:[
-  {id:'p1',nombre:'Hidrolavadora Pektra 1400W',precio:'$85.999',emoji:'🚿',guiones:[
-    {id:'g101',titulo:'Primer contacto',fase:'Primer contacto',atajo:'/h1',texto:'¡Hola! Sí, está disponible 😊 ¿La necesitás para auto, patio o terraza? Te cuento cuál es la mejor opción según tu uso.'},
-    {id:'g102',titulo:'Crear valor antes del precio',fase:'Crear valor',atajo:'/h2',texto:'Mirá, la mayoría de las hidrolavadoras domésticas no pasan de 50 bar. Esta llega a 90 bar — la misma presión que usan en los talleres. Más el sistema Autostop que cuida la bomba y ahorra agua. Todo incluido: manguera 5m, pistola, dispensador y 3 conectores. ¿Cuál era tu presupuesto?'},
-    {id:'g103',titulo:'Precio + entrega',fase:'Precio y cierre',atajo:'/h3',texto:'El precio es $85.999 y te llega directo a tu casa en 48 a 72hs — sin moverte de donde estás. Tiene garantía de 12 meses de fábrica. ¿La necesitás para el fin de semana?'},
-    {id:'g104',titulo:'Confirmar accesorios + cierre',fase:'Precio y cierre',atajo:'/h4',texto:'¡Sí, viene completa! 🔥\n✅ Pistola de pulverización\n✅ Manguera de 5 metros\n✅ Dispensador de detergente\n✅ Filtro + 3 conectores\n✅ Cable de 3 metros\n\nLlegás y enchufás. ¿Te la mando para el fin de semana?'},
-    {id:'g105',titulo:'Objeción: "está caro"',fase:'Objeciones',atajo:'/h5',texto:'Entiendo. Pensalo así: un lavado de auto en un lavadero sale entre $3.000 y $5.000. Con esta te lo lavás en casa desde el primer día — en un mes ya se pagó sola. Más 12 meses de garantía. Es inversión, no gasto 💪'},
-    {id:'g106',titulo:'Objeción: "lo voy a pensar"',fase:'Objeciones',atajo:'/h6',texto:'Claro, sin apuro. Te aviso que el precio puede cambiar — estos modelos suben seguido. ¿Querés que te reserve el precio de hoy y coordinamos la entrega cuando estés listo?'},
-    {id:'g107',titulo:'Objeción: "vi una más barata"',fase:'Objeciones',atajo:'/h7',texto:'¿Sabés cuántos bar tiene la que viste? La mayoría de las económicas no pasan de 50-60 bar y la bomba dura poco. Esta llega a 90 bar con autostop y garantía. La diferencia la notás al primer uso.'},
-    {id:'g108',titulo:'Objeción: no puede verla / retirarla',fase:'Objeciones',atajo:'/h8',texto:'Entiendo que preferirías verla antes. Lo que te puedo decir es que llega embalada de fábrica, en perfectas condiciones, directo a tu puerta en 48-72hs. Y si cuando la recibís no es lo que esperabas, tenés protección de compra para devolverla sin problema. Es más seguro que comprarlo en un local sin garantía 😊'},
-    {id:'g109',titulo:'Introducir Mercado Libre',fase:'Precio y cierre',atajo:'/h9',texto:'El pago y envío lo proceso a través de Mercado Libre — es la plataforma más segura del país, con protección al comprador y seguimiento del envío en tiempo real. ¿Tenés cuenta en ML o te ayudo a hacer la compra paso a paso?'},
-    {id:'g110',titulo:'Guía de compra ML paso a paso',fase:'Precio y cierre',atajo:'/h10',texto:'Te guío yo mismo, es muy simple:\n1️⃣ Abrís este link: [LINK]\n2️⃣ Tocás el botón verde "Comprar ahora"\n3️⃣ Si no tenés cuenta, tocás "Crear cuenta" — solo necesitás email y contraseña\n4️⃣ Elegís envío a domicilio y ponés tu dirección\n5️⃣ Elegís cómo pagar — tarjeta, débito o efectivo en Rapipago/Pago Fácil\n¿En qué paso te trabaste? Te ayudo ahí mismo 😊'},
-    {id:'g111',titulo:'Follow up',fase:'Seguimiento',atajo:'/h11',texto:'Hola! Te escribo porque la Pektra sigue disponible. Si todavía te interesa avisame y coordinamos la entrega para esta semana 👍'}
+const DEFAULT_PRODUCTOS = [
+  {slug:'pektra',nombre:'Hidrolavadora Pektra 1400W',precio:'$85.999',emoji:'🚿',guiones:[
+    {slug:'h1',titulo:'Primer contacto',fase:'Primer contacto',atajo:'/h1',texto:'¡Hola! Sí, está disponible 😊 ¿La necesitás para auto, patio o terraza? Te cuento cuál es la mejor opción según tu uso.'},
+    {slug:'h2',titulo:'Crear valor antes del precio',fase:'Crear valor',atajo:'/h2',texto:'Mirá, la mayoría de las hidrolavadoras domésticas no pasan de 50 bar. Esta llega a 90 bar — la misma presión que usan en los talleres. Más el sistema Autostop que cuida la bomba y ahorra agua. Todo incluido: manguera 5m, pistola, dispensador y 3 conectores. ¿Cuál era tu presupuesto?'},
+    {slug:'h3',titulo:'Precio + entrega',fase:'Precio y cierre',atajo:'/h3',texto:'El precio es $85.999 y te llega directo a tu casa en 48 a 72hs — sin moverte de donde estás. Tiene garantía de 12 meses de fábrica. ¿La necesitás para el fin de semana?'},
+    {slug:'h4',titulo:'Confirmar accesorios + cierre',fase:'Precio y cierre',atajo:'/h4',texto:'¡Sí, viene completa! 🔥\n✅ Pistola de pulverización\n✅ Manguera de 5 metros\n✅ Dispensador de detergente\n✅ Filtro + 3 conectores\n✅ Cable de 3 metros\n\nLlegás y enchufás. ¿Te la mando para el fin de semana?'},
+    {slug:'h5',titulo:'Objeción: "está caro"',fase:'Objeciones',atajo:'/h5',texto:'Entiendo. Pensalo así: un lavado de auto en un lavadero sale entre $3.000 y $5.000. Con esta te lo lavás en casa desde el primer día — en un mes ya se pagó sola. Más 12 meses de garantía. Es inversión, no gasto 💪'},
+    {slug:'h6',titulo:'Objeción: "lo voy a pensar"',fase:'Objeciones',atajo:'/h6',texto:'Claro, sin apuro. Te aviso que el precio puede cambiar — estos modelos suben seguido. ¿Querés que te reserve el precio de hoy y coordinamos la entrega cuando estés listo?'},
+    {slug:'h7',titulo:'Objeción: "vi una más barata"',fase:'Objeciones',atajo:'/h7',texto:'¿Sabés cuántos bar tiene la que viste? La mayoría de las económicas no pasan de 50-60 bar y la bomba dura poco. Esta llega a 90 bar con autostop y garantía. La diferencia la notás al primer uso.'},
+    {slug:'h8',titulo:'Objeción: no puede verla',fase:'Objeciones',atajo:'/h8',texto:'Entiendo que preferirías verla antes. Lo que te puedo decir es que llega embalada de fábrica, en perfectas condiciones, directo a tu puerta en 48-72hs. Y si cuando la recibís no es lo que esperabas, tenés protección de compra para devolverla sin problema. Es más seguro que comprarlo en un local sin garantía 😊'},
+    {slug:'h9',titulo:'Introducir Mercado Libre',fase:'Precio y cierre',atajo:'/h9',texto:'El pago y envío lo proceso a través de Mercado Libre — es la plataforma más segura del país, con protección al comprador y seguimiento del envío en tiempo real. ¿Tenés cuenta en ML o te ayudo a hacer la compra paso a paso?'},
+    {slug:'h10',titulo:'Guía de compra ML paso a paso',fase:'Precio y cierre',atajo:'/h10',texto:'Te guío yo mismo, es muy simple:\n1️⃣ Abrís este link: [LINK]\n2️⃣ Tocás el botón verde "Comprar ahora"\n3️⃣ Si no tenés cuenta, tocás "Crear cuenta" — solo necesitás email y contraseña\n4️⃣ Elegís envío a domicilio y ponés tu dirección\n5️⃣ Elegís cómo pagar — tarjeta, débito o efectivo en Rapipago/Pago Fácil\n¿En qué paso te trabaste? Te ayudo ahí mismo 😊'},
+    {slug:'h11',titulo:'Follow up',fase:'Seguimiento',atajo:'/h11',texto:'Hola! Te escribo porque la Pektra sigue disponible. Si todavía te interesa avisame y coordinamos la entrega para esta semana 👍'}
   ]},
-  {id:'p2',nombre:'Notebook EXO 14"',precio:'$285.000',emoji:'💻',guiones:[
-    {id:'g201',titulo:'Primer contacto',fase:'Primer contacto',atajo:'/e1',texto:'¡Hola! Sí, está disponible 😊 ¿La necesitás para estudio, trabajo o home office? Te cuento si este modelo te viene bien.'},
-    {id:'g202',titulo:'Crear valor antes del precio',fase:'Crear valor',atajo:'/e2',texto:'Tiene SSD en lugar de disco rígido — eso significa que arranca en 10 segundos y nunca se traba. Windows 11 original instalado, lista para usar desde el primer día. Pantalla 14", Intel N4020, 4GB RAM. ¿Cuál era tu presupuesto?'},
-    {id:'g203',titulo:'Precio + entrega',fase:'Precio y cierre',atajo:'/e3',texto:'El precio es $285.000 y te llega a tu casa en 48-72hs, embalada de fábrica. Tiene garantía y si hay cualquier problema tenés protección de compra. ¿La necesitás para esta semana?'},
-    {id:'g204',titulo:'Confirmar specs + cierre',fase:'Precio y cierre',atajo:'/e4',texto:'¡Sí, viene lista para usar! ✅\n✅ Pantalla 14"\n✅ Intel N4020\n✅ 4GB RAM\n✅ SSD 128GB — arranque en segundos\n✅ Windows 11 original instalado\n\nEnchufás, prendés y arrancás. ¿La necesitás para esta semana?'},
-    {id:'g205',titulo:'Objeción: "está cara"',fase:'Objeciones',atajo:'/e5',texto:'Fijate que tiene SSD y Windows 11 original instalado — solo eso ya vale más de $50.000 por separado. En un local por este precio te dan disco rígido lento sin sistema. Esta es la mejor relación precio/calidad que vas a encontrar ahora mismo 💪'},
-    {id:'g206',titulo:'Objeción: "lo voy a pensar"',fase:'Objeciones',atajo:'/e6',texto:'Claro, sin apuro. El precio puede subir — los componentes electrónicos fluctúan mucho. ¿Querés que te reserve el precio de hoy?'},
-    {id:'g207',titulo:'Objeción: "vi una más barata"',fase:'Objeciones',atajo:'/e7',texto:'¿Tiene SSD o disco rígido? Esa es la diferencia clave. Con disco rígido va lento y se traba. Con SSD arranca en 10 segundos y no se cuelga nunca. Eso hace toda la diferencia para el día a día.'},
-    {id:'g208',titulo:'Objeción: no puede verla / retirarla',fase:'Objeciones',atajo:'/e8',texto:'Entiendo que preferirías verla antes. Te cuento que llega embalada de fábrica, sellada, en perfectas condiciones. Y si cuando la recibís no es lo que esperabas tenés protección de compra para devolverla. Es más seguro que muchos locales que no tienen garantía real 😊'},
-    {id:'g209',titulo:'Introducir Mercado Libre',fase:'Precio y cierre',atajo:'/e9',texto:'El pago y envío lo proceso por Mercado Libre — la plataforma más segura del país. Podés pagar con tarjeta en cuotas, débito o efectivo en Rapipago. ¿Tenés cuenta o te ayudo con la compra paso a paso?'},
-    {id:'g210',titulo:'Guía de compra ML paso a paso',fase:'Precio y cierre',atajo:'/e10',texto:'Te guío yo, es muy simple:\n1️⃣ Abrís este link: [LINK]\n2️⃣ Tocás "Comprar ahora"\n3️⃣ Si no tenés cuenta: "Crear cuenta" — solo email y contraseña\n4️⃣ Elegís envío a domicilio y ponés tu dirección\n5️⃣ Elegís cómo pagar — tarjeta, débito o Rapipago/Pago Fácil\n¿En qué paso te trabaste? Te ayudo ahí mismo 😊'},
-    {id:'g211',titulo:'Follow up',fase:'Seguimiento',atajo:'/e11',texto:'Hola! La notebook sigue disponible. Si todavía te interesa avisame y coordinamos la entrega para esta semana 👍'}
+  {slug:'exo',nombre:'Notebook EXO 14"',precio:'$285.000',emoji:'💻',guiones:[
+    {slug:'e1',titulo:'Primer contacto',fase:'Primer contacto',atajo:'/e1',texto:'¡Hola! Sí, está disponible 😊 ¿La necesitás para estudio, trabajo o home office? Te cuento si este modelo te viene bien.'},
+    {slug:'e2',titulo:'Crear valor antes del precio',fase:'Crear valor',atajo:'/e2',texto:'Tiene SSD en lugar de disco rígido — eso significa que arranca en 10 segundos y nunca se traba. Windows 11 original instalado, lista para usar desde el primer día. Pantalla 14", Intel N4020, 4GB RAM. ¿Cuál era tu presupuesto?'},
+    {slug:'e3',titulo:'Precio + entrega',fase:'Precio y cierre',atajo:'/e3',texto:'El precio es $285.000 y te llega a tu casa en 48-72hs, embalada de fábrica. Tiene garantía y si hay cualquier problema tenés protección de compra. ¿La necesitás para esta semana?'},
+    {slug:'e4',titulo:'Confirmar specs + cierre',fase:'Precio y cierre',atajo:'/e4',texto:'¡Sí, viene lista para usar! ✅\n✅ Pantalla 14"\n✅ Intel N4020\n✅ 4GB RAM\n✅ SSD 128GB — arranque en segundos\n✅ Windows 11 original instalado\n\nEnchufás, prendés y arrancás. ¿La necesitás para esta semana?'},
+    {slug:'e5',titulo:'Objeción: "está cara"',fase:'Objeciones',atajo:'/e5',texto:'Fijate que tiene SSD y Windows 11 original instalado — solo eso ya vale más de $50.000 por separado. En un local por este precio te dan disco rígido lento sin sistema. Esta es la mejor relación precio/calidad que vas a encontrar ahora mismo 💪'},
+    {slug:'e6',titulo:'Objeción: "lo voy a pensar"',fase:'Objeciones',atajo:'/e6',texto:'Claro, sin apuro. El precio puede subir — los componentes electrónicos fluctúan mucho. ¿Querés que te reserve el precio de hoy?'},
+    {slug:'e7',titulo:'Objeción: "vi una más barata"',fase:'Objeciones',atajo:'/e7',texto:'¿Tiene SSD o disco rígido? Esa es la diferencia clave. Con disco rígido va lento y se traba. Con SSD arranca en 10 segundos y no se cuelga nunca. Eso hace toda la diferencia para el día a día.'},
+    {slug:'e8',titulo:'Objeción: no puede verla',fase:'Objeciones',atajo:'/e8',texto:'Entiendo que preferirías verla antes. Te cuento que llega embalada de fábrica, sellada, en perfectas condiciones. Y si cuando la recibís no es lo que esperabas tenés protección de compra para devolverla. Es más seguro que muchos locales que no tienen garantía real 😊'},
+    {slug:'e9',titulo:'Introducir Mercado Libre',fase:'Precio y cierre',atajo:'/e9',texto:'El pago y envío lo proceso por Mercado Libre — la plataforma más segura del país. Podés pagar con tarjeta en cuotas, débito o efectivo en Rapipago. ¿Tenés cuenta o te ayudo con la compra paso a paso?'},
+    {slug:'e10',titulo:'Guía de compra ML paso a paso',fase:'Precio y cierre',atajo:'/e10',texto:'Te guío yo, es muy simple:\n1️⃣ Abrís este link: [LINK]\n2️⃣ Tocás "Comprar ahora"\n3️⃣ Si no tenés cuenta: "Crear cuenta" — solo email y contraseña\n4️⃣ Elegís envío a domicilio y ponés tu dirección\n5️⃣ Elegís cómo pagar — tarjeta, débito o Rapipago/Pago Fácil\n¿En qué paso te trabaste? Te ayudo ahí mismo 😊'},
+    {slug:'e11',titulo:'Follow up',fase:'Seguimiento',atajo:'/e11',texto:'Hola! La notebook sigue disponible. Si todavía te interesa avisame y coordinamos la entrega para esta semana 👍'}
   ]},
-  {id:'p3',nombre:'Hidrolavadora Trent 1600 PSI',precio:'$95.673',emoji:'⚡',guiones:[
-    {id:'g301',titulo:'Primer contacto',fase:'Primer contacto',atajo:'/t1',texto:'¡Hola! Sí, está disponible 😊 ¿La necesitás para auto, patio o terraza? Te cuento si esta potencia te alcanza.'},
-    {id:'g302',titulo:'Crear valor antes del precio',fase:'Crear valor',atajo:'/t2',texto:'Esta llega a 1600 PSI — casi el doble que las domésticas comunes que no pasan de 1000. Motor 1400W, limpia entre 20 y 40m² por hora. Certificación LENOR y protección IPX5. Kit completo incluido, enchufás y arrancás. ¿Cuál era tu presupuesto?'},
-    {id:'g303',titulo:'Precio + entrega',fase:'Precio y cierre',atajo:'/t3',texto:'El precio es $95.673 y te llega a tu casa en 48-72hs. Podés pagar en cuotas con tarjeta. Garantía incluida y si hay cualquier problema tenés protección de compra. ¿La necesitás para el fin de semana?'},
-    {id:'g304',titulo:'Confirmar kit + cierre',fase:'Precio y cierre',atajo:'/t4',texto:'¡Sí, viene con todo! 🔥\n✅ Pistola con lanza ajustable\n✅ Botella de detergente\n✅ Manguera de alta presión 3m\n✅ Cable 5m\n✅ Filtro + pin limpiador\n✅ Conector rápido 1/2"\n\nEnchufás y arrancás. ¿La necesitás para el fin de semana?'},
-    {id:'g305',titulo:'Objeción: "está cara"',fase:'Objeciones',atajo:'/t5',texto:'Fijate que tiene 1600 PSI y certificación LENOR — las económicas no tienen ninguna certificación y la bomba dura poco. Limpia 20 a 40m² por hora. En un mes de lavados de auto ya se pagó sola 💪'},
-    {id:'g306',titulo:'Objeción: "lo voy a pensar"',fase:'Objeciones',atajo:'/t6',texto:'Claro, sin apuro. El precio actual es de lanzamiento y puede subir. ¿Querés que te reserve el precio de hoy y coordinamos cuando estés listo?'},
-    {id:'g307',titulo:'Objeción: "vi una más barata"',fase:'Objeciones',atajo:'/t7',texto:'¿Sabés cuántos PSI tiene la que viste? La mayoría no llega a 1000 PSI. Esta tiene 1600 — casi el doble de presión. La diferencia se nota especialmente en grasa, moho y mugre acumulada.'},
-    {id:'g308',titulo:'Objeción: no puede verla / retirarla',fase:'Objeciones',atajo:'/t8',texto:'Entiendo que preferirías verla antes. Llega embalada de fábrica, en perfectas condiciones, directo a tu puerta en 48-72hs. Y si no es lo que esperabas tenés protección de compra para devolverla. Más seguro que un local sin garantía 😊'},
-    {id:'g309',titulo:'Introducir Mercado Libre',fase:'Precio y cierre',atajo:'/t9',texto:'El pago y envío lo proceso por Mercado Libre — podés pagar en cuotas con tarjeta, débito o efectivo en Rapipago. ¿Tenés cuenta o te ayudo paso a paso?'},
-    {id:'g310',titulo:'Guía de compra ML paso a paso',fase:'Precio y cierre',atajo:'/t10',texto:'Te guío yo, es muy simple:\n1️⃣ Abrís este link: [LINK]\n2️⃣ Tocás "Comprar ahora"\n3️⃣ Si no tenés cuenta: "Crear cuenta" — solo email y contraseña\n4️⃣ Elegís envío a domicilio y ponés tu dirección\n5️⃣ Elegís cómo pagar — tarjeta, débito o Rapipago/Pago Fácil\n¿En qué paso te trabaste? Te ayudo ahí mismo 😊'},
-    {id:'g311',titulo:'Follow up',fase:'Seguimiento',atajo:'/t11',texto:'Hola! La Trent sigue disponible. Si todavía te interesa avisame y coordinamos la entrega para esta semana 👍'}
+  {slug:'trent',nombre:'Hidrolavadora Trent 1600 PSI',precio:'$95.673',emoji:'⚡',guiones:[
+    {slug:'t1',titulo:'Primer contacto',fase:'Primer contacto',atajo:'/t1',texto:'¡Hola! Sí, está disponible 😊 ¿La necesitás para auto, patio o terraza? Te cuento si esta potencia te alcanza.'},
+    {slug:'t2',titulo:'Crear valor antes del precio',fase:'Crear valor',atajo:'/t2',texto:'Esta llega a 1600 PSI — casi el doble que las domésticas comunes que no pasan de 1000. Motor 1400W, limpia entre 20 y 40m² por hora. Certificación LENOR y protección IPX5. Kit completo incluido, enchufás y arrancás. ¿Cuál era tu presupuesto?'},
+    {slug:'t3',titulo:'Precio + entrega',fase:'Precio y cierre',atajo:'/t3',texto:'El precio es $95.673 y te llega a tu casa en 48-72hs. Podés pagar en cuotas con tarjeta. Garantía incluida y si hay cualquier problema tenés protección de compra. ¿La necesitás para el fin de semana?'},
+    {slug:'t4',titulo:'Confirmar kit + cierre',fase:'Precio y cierre',atajo:'/t4',texto:'¡Sí, viene con todo! 🔥\n✅ Pistola con lanza ajustable\n✅ Botella de detergente\n✅ Manguera de alta presión 3m\n✅ Cable 5m\n✅ Filtro + pin limpiador\n✅ Conector rápido 1/2"\n\nEnchufás y arrancás. ¿La necesitás para el fin de semana?'},
+    {slug:'t5',titulo:'Objeción: "está cara"',fase:'Objeciones',atajo:'/t5',texto:'Fijate que tiene 1600 PSI y certificación LENOR — las económicas no tienen ninguna certificación y la bomba dura poco. Limpia 20 a 40m² por hora. En un mes de lavados de auto ya se pagó sola 💪'},
+    {slug:'t6',titulo:'Objeción: "lo voy a pensar"',fase:'Objeciones',atajo:'/t6',texto:'Claro, sin apuro. El precio actual es de lanzamiento y puede subir. ¿Querés que te reserve el precio de hoy y coordinamos cuando estés listo?'},
+    {slug:'t7',titulo:'Objeción: "vi una más barata"',fase:'Objeciones',atajo:'/t7',texto:'¿Sabés cuántos PSI tiene la que viste? La mayoría no llega a 1000 PSI. Esta tiene 1600 — casi el doble de presión. La diferencia se nota especialmente en grasa, moho y mugre acumulada.'},
+    {slug:'t8',titulo:'Objeción: no puede verla',fase:'Objeciones',atajo:'/t8',texto:'Entiendo que preferirías verla antes. Llega embalada de fábrica, en perfectas condiciones, directo a tu puerta en 48-72hs. Y si no es lo que esperabas tenés protección de compra para devolverla. Más seguro que un local sin garantía 😊'},
+    {slug:'t9',titulo:'Introducir Mercado Libre',fase:'Precio y cierre',atajo:'/t9',texto:'El pago y envío lo proceso por Mercado Libre — podés pagar en cuotas con tarjeta, débito o efectivo en Rapipago. ¿Tenés cuenta o te ayudo paso a paso?'},
+    {slug:'t10',titulo:'Guía de compra ML paso a paso',fase:'Precio y cierre',atajo:'/t10',texto:'Te guío yo, es muy simple:\n1️⃣ Abrís este link: [LINK]\n2️⃣ Tocás "Comprar ahora"\n3️⃣ Si no tenés cuenta: "Crear cuenta" — solo email y contraseña\n4️⃣ Elegís envío a domicilio y ponés tu dirección\n5️⃣ Elegís cómo pagar — tarjeta, débito o Rapipago/Pago Fácil\n¿En qué paso te trabaste? Te ayudo ahí mismo 😊'},
+    {slug:'t11',titulo:'Follow up',fase:'Seguimiento',atajo:'/t11',texto:'Hola! La Trent sigue disponible. Si todavía te interesa avisame y coordinamos la entrega para esta semana 👍'}
   ]},
-  {id:'p4',nombre:'Kit Herramientas 53 piezas',precio:'',emoji:'🔧',guiones:[
-    {id:'g401',titulo:'Primer contacto',fase:'Primer contacto',atajo:'/k1',texto:'¡Hola! Sí, está disponible 😊 ¿Lo necesitás para casa, auto o moto? Te cuento si este kit te viene bien.'},
-    {id:'g402',titulo:'Crear valor antes del precio',fase:'Crear valor',atajo:'/k2',texto:'Son 53 piezas de acero cromo-vanadio — el mismo material de las marcas profesionales. Trinquete con 72 dientes de liberación rápida, mango antideslizante ergonómico y maletín organizador incluido. No es el kit genérico de ferretería. ¿Cuál era tu presupuesto?'},
-    {id:'g403',titulo:'Precio + entrega',fase:'Precio y cierre',atajo:'/k3',texto:'El precio es con envío a tu casa en 48-72hs. Tiene garantía y protección de compra incluida. ¿Lo necesitás para esta semana?'},
-    {id:'g404',titulo:'Confirmar contenido + cierre',fase:'Precio y cierre',atajo:'/k4',texto:'¡Sí, son 53 piezas completas! 🔧\n✅ Llave de trinquete 72 dientes\n✅ Acero cromo-vanadio profesional\n✅ Mango antideslizante ergonómico\n✅ Liberación rápida con botón pulsador\n✅ Maletín organizador incluido\n\nAbrís la caja y arrancás. ¿Lo necesitás para esta semana?'},
-    {id:'g405',titulo:'Objeción: "está caro"',fase:'Objeciones',atajo:'/k5',texto:'Son 53 piezas de cromo-vanadio con maletín — comprar cada herramienta por separado te sale el triple. Es el kit para todo: auto, moto, casa. Una sola compra para años 💪'},
-    {id:'g406',titulo:'Objeción: "lo voy a pensar"',fase:'Objeciones',atajo:'/k6',texto:'Claro, sin apuro. Este tipo de kits se mueve rápido y el precio puede cambiar. ¿Querés que te reserve el precio de hoy?'},
-    {id:'g407',titulo:'Objeción: "vi uno más barato"',fase:'Objeciones',atajo:'/k7',texto:'¿Es cromo-vanadio o acero común? Con acero común las piezas se doblan o rompen con el primer uso fuerte. El cromo-vanadio dura años. A largo plazo este kit es mucho más barato.'},
-    {id:'g408',titulo:'Objeción: no puede verlo / retirarlo',fase:'Objeciones',atajo:'/k8',texto:'Entiendo que preferirías verlo antes. Llega embalado de fábrica, en perfectas condiciones, directo a tu puerta en 48-72hs. Y si no es lo que esperabas tenés protección de compra para devolverlo 😊'},
-    {id:'g409',titulo:'Introducir Mercado Libre',fase:'Precio y cierre',atajo:'/k9',texto:'El pago y envío lo proceso por Mercado Libre — podés pagar con tarjeta en cuotas, débito o efectivo en Rapipago. ¿Tenés cuenta o te ayudo paso a paso?'},
-    {id:'g410',titulo:'Guía de compra ML paso a paso',fase:'Precio y cierre',atajo:'/k10',texto:'Te guío yo, es muy simple:\n1️⃣ Abrís este link: [LINK]\n2️⃣ Tocás "Comprar ahora"\n3️⃣ Si no tenés cuenta: "Crear cuenta" — solo email y contraseña\n4️⃣ Elegís envío a domicilio y ponés tu dirección\n5️⃣ Elegís cómo pagar — tarjeta, débito o Rapipago/Pago Fácil\n¿En qué paso te trabaste? Te ayudo ahí mismo 😊'},
-    {id:'g411',titulo:'Follow up',fase:'Seguimiento',atajo:'/k11',texto:'Hola! El kit de herramientas sigue disponible. Si todavía te interesa avisame y coordinamos la entrega para esta semana 👍'}
+  {slug:'kit',nombre:'Kit Herramientas 53 piezas',precio:'',emoji:'🔧',guiones:[
+    {slug:'k1',titulo:'Primer contacto',fase:'Primer contacto',atajo:'/k1',texto:'¡Hola! Sí, está disponible 😊 ¿Lo necesitás para casa, auto o moto? Te cuento si este kit te viene bien.'},
+    {slug:'k2',titulo:'Crear valor antes del precio',fase:'Crear valor',atajo:'/k2',texto:'Son 53 piezas de acero cromo-vanadio — el mismo material de las marcas profesionales. Trinquete con 72 dientes de liberación rápida, mango antideslizante ergonómico y maletín organizador incluido. No es el kit genérico de ferretería. ¿Cuál era tu presupuesto?'},
+    {slug:'k3',titulo:'Precio + entrega',fase:'Precio y cierre',atajo:'/k3',texto:'El precio es con envío a tu casa en 48-72hs. Tiene garantía y protección de compra incluida. ¿Lo necesitás para esta semana?'},
+    {slug:'k4',titulo:'Confirmar contenido + cierre',fase:'Precio y cierre',atajo:'/k4',texto:'¡Sí, son 53 piezas completas! 🔧\n✅ Llave de trinquete 72 dientes\n✅ Acero cromo-vanadio profesional\n✅ Mango antideslizante ergonómico\n✅ Liberación rápida con botón pulsador\n✅ Maletín organizador incluido\n\nAbrís la caja y arrancás. ¿Lo necesitás para esta semana?'},
+    {slug:'k5',titulo:'Objeción: "está caro"',fase:'Objeciones',atajo:'/k5',texto:'Son 53 piezas de cromo-vanadio con maletín — comprar cada herramienta por separado te sale el triple. Es el kit para todo: auto, moto, casa. Una sola compra para años 💪'},
+    {slug:'k6',titulo:'Objeción: "lo voy a pensar"',fase:'Objeciones',atajo:'/k6',texto:'Claro, sin apuro. Este tipo de kits se mueve rápido y el precio puede cambiar. ¿Querés que te reserve el precio de hoy?'},
+    {slug:'k7',titulo:'Objeción: "vi uno más barato"',fase:'Objeciones',atajo:'/k7',texto:'¿Es cromo-vanadio o acero común? Con acero común las piezas se doblan o rompen con el primer uso fuerte. El cromo-vanadio dura años. A largo plazo este kit es mucho más barato.'},
+    {slug:'k8',titulo:'Objeción: no puede verlo',fase:'Objeciones',atajo:'/k8',texto:'Entiendo que preferirías verlo antes. Llega embalado de fábrica, en perfectas condiciones, directo a tu puerta en 48-72hs. Y si no es lo que esperabas tenés protección de compra para devolverlo 😊'},
+    {slug:'k9',titulo:'Introducir Mercado Libre',fase:'Precio y cierre',atajo:'/k9',texto:'El pago y envío lo proceso por Mercado Libre — podés pagar con tarjeta en cuotas, débito o efectivo en Rapipago. ¿Tenés cuenta o te ayudo paso a paso?'},
+    {slug:'k10',titulo:'Guía de compra ML paso a paso',fase:'Precio y cierre',atajo:'/k10',texto:'Te guío yo, es muy simple:\n1️⃣ Abrís este link: [LINK]\n2️⃣ Tocás "Comprar ahora"\n3️⃣ Si no tenés cuenta: "Crear cuenta" — solo email y contraseña\n4️⃣ Elegís envío a domicilio y ponés tu dirección\n5️⃣ Elegís cómo pagar — tarjeta, débito o Rapipago/Pago Fácil\n¿En qué paso te trabaste? Te ayudo ahí mismo 😊'},
+    {slug:'k11',titulo:'Follow up',fase:'Seguimiento',atajo:'/k11',texto:'Hola! El kit de herramientas sigue disponible. Si todavía te interesa avisame y coordinamos la entrega para esta semana 👍'}
   ]}
-]};
+];
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
-let data={productos:[]};
-let currentProductoId=null;
-let editingGuionId=null;
-let editingProductoId=null;
-let activeFilter='Todos';
-let selectedEmoji='📦';
+let currentUser = null;
+let productos = [];
+let currentProductoId = null;
+let editingGuionId = null;
+let editingProductoId = null;
+let activeFilter = 'Todos';
+let selectedEmoji = '📦';
+let newWorker = null;
 
-function load(){
-  try{
-    const s=localStorage.getItem('guiones_multi_v1');
-    if(s){
-      const saved=JSON.parse(s);
-      // Si la versión guardada es anterior, merge productos nuevos
-      if(!saved.version || saved.version !== APP_VERSION){
-        // Conservar guiones custom del usuario, agregar productos nuevos del DEFAULT
-        const savedIds=saved.productos.map(p=>p.id);
-        const newProds=DEFAULT_DATA.productos.filter(p=>!savedIds.includes(p.id));
-        saved.productos=[...saved.productos,...newProds];
-        saved.version=APP_VERSION;
-        data=saved;
-        save();
-      } else {
-        data=saved;
-      }
-    } else {
-      data=JSON.parse(JSON.stringify(DEFAULT_DATA));
-    }
-  }catch(e){data=JSON.parse(JSON.stringify(DEFAULT_DATA));}
-}
-
-function save(){localStorage.setItem('guiones_multi_v1',JSON.stringify(data));}
-
-// ─── SERVICE WORKER & AUTO UPDATE ────────────────────────────────────────────
-let newWorker=null;
-
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('sw.js').then(reg=>{
-    // Chequear actualización al abrir
-    reg.update();
-
-    reg.addEventListener('updatefound',()=>{
-      newWorker=reg.installing;
-      newWorker.addEventListener('statechange',()=>{
-        if(newWorker.state==='installed' && navigator.serviceWorker.controller){
-          // Hay nueva versión lista
-          document.getElementById('update-banner').classList.add('visible');
-        }
-      });
-    });
-  });
-
-  // Cuando el SW toma control, recargar la página
-  navigator.serviceWorker.addEventListener('controllerchange',()=>{
-    window.location.reload();
-  });
-}
-
-function applyUpdate(){
-  if(newWorker){
-    newWorker.postMessage('SKIP_WAITING');
+// ─── SUPABASE AUTH ────────────────────────────────────────────────────────────
+async function initAuth() {
+  showLoading(true);
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    await onLogin(session.user);
   } else {
-    window.location.reload();
+    showLoading(false);
+    showLogin(true);
   }
+  sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      await onLogin(session.user);
+    } else if (event === 'SIGNED_OUT') {
+      currentUser = null;
+      showApp(false);
+      showLogin(true);
+    }
+  });
 }
 
-// ─── NAVIGATION ──────────────────────────────────────────────────────────────
-function goHome(){
-  currentProductoId=null;activeFilter='Todos';
-  document.getElementById('search').value='';
-  document.getElementById('back-btn').classList.remove('visible');
-  document.getElementById('action-btn').textContent='+ Producto';
-  document.getElementById('tabs').style.display='none';
-  document.getElementById('header-center').innerHTML='<div class="logo-text">⚡ Guiones</div><div class="logo-sub">SALES CLOSER v'+APP_VERSION+'</div>';
+async function loginGoogle() {
+  const { error } = await sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.href }
+  });
+  if (error) showToast('Error al iniciar sesión', false);
+}
+
+async function logout() {
+  closeUserMenu();
+  await sb.auth.signOut();
+}
+
+async function onLogin(user) {
+  currentUser = user;
+  showLoading(true);
+  await ensureTablas();
+  await loadProductos();
+  updateAvatar(user);
+  document.getElementById('menu-name').textContent = user.user_metadata?.full_name || 'Usuario';
+  document.getElementById('menu-email').textContent = user.email || '';
+  showLoading(false);
+  showLogin(false);
+  showApp(true);
   render();
 }
 
-function goProducto(id){
-  currentProductoId=id;activeFilter='Todos';
-  document.getElementById('search').value='';
+// ─── SUPABASE DB ──────────────────────────────────────────────────────────────
+async function ensureTablas() {
+  // Verificar si el usuario ya tiene productos
+  const { data, error } = await sb.from('productos').select('id').eq('user_id', currentUser.id).limit(1);
+  if (!error && (!data || data.length === 0)) {
+    // Primera vez — cargar productos por defecto
+    await seedDefaultData();
+  }
+}
+
+async function seedDefaultData() {
+  for (const p of DEFAULT_PRODUCTOS) {
+    const { data: prod } = await sb.from('productos').insert({
+      user_id: currentUser.id,
+      nombre: p.nombre,
+      precio: p.precio,
+      emoji: p.emoji,
+      orden: DEFAULT_PRODUCTOS.indexOf(p)
+    }).select().single();
+    if (prod) {
+      const guiones = p.guiones.map((g, i) => ({
+        user_id: currentUser.id,
+        producto_id: prod.id,
+        titulo: g.titulo,
+        fase: g.fase,
+        atajo: g.atajo,
+        texto: g.texto,
+        orden: i
+      }));
+      await sb.from('guiones').insert(guiones);
+    }
+  }
+}
+
+async function loadProductos() {
+  const { data: prods } = await sb.from('productos')
+    .select('*, guiones(*)')
+    .eq('user_id', currentUser.id)
+    .order('orden', { ascending: true });
+  if (prods) {
+    productos = prods.map(p => ({
+      ...p,
+      guiones: (p.guiones || []).sort((a, b) => a.orden - b.orden)
+    }));
+  }
+}
+
+async function dbSaveProducto(p) {
+  if (p.id && typeof p.id === 'number') {
+    const { data } = await sb.from('productos').update({
+      nombre: p.nombre, precio: p.precio, emoji: p.emoji
+    }).eq('id', p.id).eq('user_id', currentUser.id).select().single();
+    return data;
+  } else {
+    const { data } = await sb.from('productos').insert({
+      user_id: currentUser.id, nombre: p.nombre, precio: p.precio, emoji: p.emoji,
+      orden: productos.length
+    }).select().single();
+    return data;
+  }
+}
+
+async function dbDeleteProducto(id) {
+  await sb.from('guiones').delete().eq('producto_id', id).eq('user_id', currentUser.id);
+  await sb.from('productos').delete().eq('id', id).eq('user_id', currentUser.id);
+}
+
+async function dbSaveGuion(g, productoId) {
+  if (g.id && typeof g.id === 'number') {
+    const { data } = await sb.from('guiones').update({
+      titulo: g.titulo, fase: g.fase, atajo: g.atajo, texto: g.texto
+    }).eq('id', g.id).eq('user_id', currentUser.id).select().single();
+    return data;
+  } else {
+    const prod = productos.find(p => p.id === productoId);
+    const { data } = await sb.from('guiones').insert({
+      user_id: currentUser.id, producto_id: productoId,
+      titulo: g.titulo, fase: g.fase, atajo: g.atajo, texto: g.texto,
+      orden: prod ? prod.guiones.length : 0
+    }).select().single();
+    return data;
+  }
+}
+
+async function dbDeleteGuion(id) {
+  await sb.from('guiones').delete().eq('id', id).eq('user_id', currentUser.id);
+}
+
+// ─── UI HELPERS ──────────────────────────────────────────────────────────────
+function showLoading(v) {
+  document.getElementById('loading-screen').classList.toggle('visible', v);
+}
+function showLogin(v) {
+  document.getElementById('login-screen').classList.toggle('visible', v);
+}
+function showApp(v) {
+  document.getElementById('main-header').style.display = v ? 'block' : 'none';
+  document.getElementById('content').style.display = v ? 'block' : 'none';
+}
+function updateAvatar(user) {
+  const av = document.getElementById('avatar');
+  const pic = user.user_metadata?.avatar_url;
+  if (pic) av.innerHTML = `<img src="${pic}" alt="">`;
+  else av.textContent = (user.user_metadata?.full_name || 'U')[0].toUpperCase();
+}
+function toggleUserMenu() {
+  document.getElementById('user-menu').classList.toggle('open');
+}
+function closeUserMenu() {
+  document.getElementById('user-menu').classList.remove('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('#user-menu') && !e.target.closest('#avatar'))
+    closeUserMenu();
+});
+
+// ─── NAVIGATION ──────────────────────────────────────────────────────────────
+function goHome() {
+  currentProductoId = null; activeFilter = 'Todos';
+  document.getElementById('search').value = '';
+  document.getElementById('back-btn').classList.remove('visible');
+  document.getElementById('action-btn').textContent = '+ Producto';
+  document.getElementById('tabs').style.display = 'none';
+  document.getElementById('header-center').innerHTML = '<div class="logo-text">⚡ Guiones</div><div class="logo-sub">SALES CLOSER v' + APP_VERSION + '</div>';
+  render();
+}
+
+function goProducto(id) {
+  currentProductoId = id; activeFilter = 'Todos';
+  document.getElementById('search').value = '';
   document.getElementById('back-btn').classList.add('visible');
-  document.getElementById('action-btn').textContent='+ Guión';
-  document.getElementById('tabs').style.display='flex';
-  const p=data.productos.find(x=>x.id===id);
-  updateHeaderProducto(p);
-  renderTabs(p);render();
+  document.getElementById('action-btn').textContent = '+ Guión';
+  document.getElementById('tabs').style.display = 'flex';
+  const p = productos.find(x => x.id === id);
+  updateHeaderProducto(p); renderTabs(p); render();
 }
 
-function updateHeaderProducto(p){
-  document.getElementById('header-center').innerHTML=`<div class="header-title">${p.emoji} ${p.nombre}</div><div class="header-sub">${p.precio||'Sin precio'} · ${p.guiones.length} guiones</div>`;
+function updateHeaderProducto(p) {
+  document.getElementById('header-center').innerHTML = `<div class="header-title">${p.emoji} ${p.nombre}</div><div class="header-sub">${p.precio || 'Sin precio'} · ${p.guiones.length} guiones</div>`;
 }
-
-function handleAction(){if(!currentProductoId)openModalProducto();else openModalGuion();}
+function handleAction() { if (!currentProductoId) openModalProducto(); else openModalGuion(); }
 
 // ─── RENDER ──────────────────────────────────────────────────────────────────
-function renderTabs(p){
-  const wrap=document.getElementById('tabs');
-  const fases=['Todos',...new Set(p.guiones.map(g=>g.fase))];
-  wrap.innerHTML=fases.map(f=>`<div class="tab ${f===activeFilter?'active':''}" onclick="setFilter('${f}')">${f}</div>`).join('');
+function renderTabs(p) {
+  const wrap = document.getElementById('tabs');
+  const fases = ['Todos', ...new Set(p.guiones.map(g => g.fase))];
+  wrap.innerHTML = fases.map(f => `<div class="tab ${f === activeFilter ? 'active' : ''}" onclick="setFilter('${f}')">${f}</div>`).join('');
 }
-
-function setFilter(f){
-  activeFilter=f;
-  const p=data.productos.find(x=>x.id===currentProductoId);
-  if(p)renderTabs(p);render();
+function setFilter(f) {
+  activeFilter = f;
+  const p = productos.find(x => x.id === currentProductoId);
+  if (p) renderTabs(p); render();
 }
-
-function render(){
-  if(!currentProductoId)renderHome();
-  else{const p=data.productos.find(x=>x.id===currentProductoId);if(p)renderGuiones(p);}
+function render() {
+  if (!currentProductoId) renderHome();
+  else { const p = productos.find(x => x.id === currentProductoId); if (p) renderGuiones(p); }
 }
-
-function renderHome(){
-  const q=document.getElementById('search').value.toLowerCase();
-  const filtered=data.productos.filter(p=>!q||p.nombre.toLowerCase().includes(q));
-  const c=document.getElementById('content');
-  if(!filtered.length){
-    c.innerHTML=`<div class="empty"><div class="empty-icon">📦</div><div class="empty-text">No hay productos todavía.<br>Tocá <strong>+ Producto</strong> para agregar el primero.</div></div>`;return;
+function renderHome() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const filtered = productos.filter(p => !q || p.nombre.toLowerCase().includes(q));
+  const c = document.getElementById('content');
+  if (!filtered.length) {
+    c.innerHTML = `<div class="empty"><div class="empty-icon">📦</div><div class="empty-text">No hay productos todavía.<br>Tocá <strong>+ Producto</strong> para agregar el primero.</div></div>`; return;
   }
-  let html='<div class="section-label">Mis productos</div><div class="products-grid">';
-  filtered.forEach((p,i)=>{
-    html+=`<div class="product-card" style="animation-delay:${i*50}ms" onclick="goProducto('${p.id}')">
+  let html = '<div class="section-label">Mis productos</div><div class="products-grid">';
+  filtered.forEach((p, i) => {
+    html += `<div class="product-card" style="animation-delay:${i * 50}ms" onclick="goProducto(${p.id})">
       <div class="product-emoji">${p.emoji}</div>
       <div class="product-info">
         <div class="product-name">${p.nombre}</div>
         <div class="product-meta">
           <span class="product-count">${p.guiones.length} guiones</span>
-          ${p.precio?`<span class="product-price">${p.precio}</span>`:''}
+          ${p.precio ? `<span class="product-price">${p.precio}</span>` : ''}
         </div>
       </div>
       <div class="product-actions" onclick="event.stopPropagation()">
-        <button class="btn-icon" onclick="openEditProducto('${p.id}')">✏️</button>
-        <button class="btn-icon danger" onclick="deleteProducto('${p.id}')">🗑</button>
+        <button class="btn-icon" onclick="openEditProducto(${p.id})">✏️</button>
+        <button class="btn-icon danger" onclick="deleteProducto(${p.id})">🗑</button>
       </div>
       <span class="product-arrow">›</span>
     </div>`;
   });
-  html+=`</div><div class="version-badge">v${APP_VERSION}</div>`;
-  c.innerHTML=html;
+  html += `</div><div class="version-badge">v${APP_VERSION}</div>`;
+  c.innerHTML = html;
 }
-
-function renderGuiones(p){
-  const q=document.getElementById('search').value.toLowerCase();
-  const filtered=p.guiones.filter(g=>{
-    const mf=activeFilter==='Todos'||g.fase===activeFilter;
-    const ms=!q||g.titulo.toLowerCase().includes(q)||g.texto.toLowerCase().includes(q);
-    return mf&&ms;
+function renderGuiones(p) {
+  const q = document.getElementById('search').value.toLowerCase();
+  const filtered = p.guiones.filter(g => {
+    const mf = activeFilter === 'Todos' || g.fase === activeFilter;
+    const ms = !q || g.titulo.toLowerCase().includes(q) || g.texto.toLowerCase().includes(q);
+    return mf && ms;
   });
-  const c=document.getElementById('content');
-  if(!filtered.length){
-    c.innerHTML=`<div class="empty"><div class="empty-icon">💬</div><div class="empty-text">No hay guiones acá.<br>Tocá <strong>+ Guión</strong> para crear uno.</div></div>`;return;
+  const c = document.getElementById('content');
+  if (!filtered.length) {
+    c.innerHTML = `<div class="empty"><div class="empty-icon">💬</div><div class="empty-text">No hay guiones acá.<br>Tocá <strong>+ Guión</strong> para crear uno.</div></div>`; return;
   }
-  const groups={};
-  filtered.forEach(g=>{if(!groups[g.fase])groups[g.fase]=[];groups[g.fase].push(g);});
-  let html='';
-  Object.keys(groups).forEach(fase=>{
-    html+=`<div class="section-label">${fase}</div>`;
-    groups[fase].forEach((g,i)=>{
-      html+=`<div class="card" id="card-${g.id}" style="animation-delay:${i*40}ms">
-        <div class="card-head" onclick="toggleCard('${g.id}')">
+  const groups = {};
+  filtered.forEach(g => { if (!groups[g.fase]) groups[g.fase] = []; groups[g.fase].push(g); });
+  let html = '';
+  Object.keys(groups).forEach(fase => {
+    html += `<div class="section-label">${fase}</div>`;
+    groups[fase].forEach((g, i) => {
+      html += `<div class="card" id="card-${g.id}" style="animation-delay:${i * 40}ms">
+        <div class="card-head" onclick="toggleCard(${g.id})">
           <div class="card-meta">
             <div class="card-title">${g.titulo}</div>
             <div class="card-tags">
               <span class="tag tag-fase">${g.fase}</span>
-              ${g.atajo?`<span class="tag tag-atajo">${g.atajo}</span>`:''}
+              ${g.atajo ? `<span class="tag tag-atajo">${g.atajo}</span>` : ''}
             </div>
           </div>
           <span class="card-chevron">⌄</span>
@@ -420,165 +608,194 @@ function renderGuiones(p){
         <div class="card-body">
           <div class="card-text" id="ct-${g.id}">${g.texto}</div>
           <div class="card-actions">
-            <button class="btn-copy" id="btn-${g.id}" onclick="copiar('${g.id}')"><span>📋</span> Copiar</button>
-            <button class="btn-sm" onclick="openEditGuion('${g.id}')">✏️</button>
-            <button class="btn-sm danger" onclick="deleteGuion('${g.id}')">🗑</button>
+            <button class="btn-copy" id="btn-${g.id}" onclick="copiar(${g.id})"><span>📋</span> Copiar</button>
+            <button class="btn-sm" onclick="openEditGuion(${g.id})">✏️</button>
+            <button class="btn-sm danger" onclick="deleteGuion(${g.id})">🗑</button>
           </div>
         </div>
       </div>`;
     });
   });
-  c.innerHTML=html;
+  c.innerHTML = html;
 }
-
-function toggleCard(id){document.getElementById('card-'+id)?.classList.toggle('open');}
+function toggleCard(id) { document.getElementById('card-' + id)?.classList.toggle('open'); }
 
 // ─── COPY ────────────────────────────────────────────────────────────────────
-function copiar(id){
-  const el=document.getElementById('ct-'+id);
-  const btn=document.getElementById('btn-'+id);
-  const texto=el.innerText;
-  const doCopy=()=>{
-    if(navigator.clipboard?.writeText)return navigator.clipboard.writeText(texto);
-    const ta=document.createElement('textarea');ta.value=texto;ta.style.cssText='position:fixed;opacity:0';
-    document.body.appendChild(ta);ta.focus();ta.select();document.execCommand('copy');document.body.removeChild(ta);
+function copiar(id) {
+  const el = document.getElementById('ct-' + id);
+  const btn = document.getElementById('btn-' + id);
+  const texto = el.innerText;
+  const doCopy = () => {
+    if (navigator.clipboard?.writeText) return navigator.clipboard.writeText(texto);
+    const ta = document.createElement('textarea'); ta.value = texto; ta.style.cssText = 'position:fixed;opacity:0';
+    document.body.appendChild(ta); ta.focus(); ta.select(); document.execCommand('copy'); document.body.removeChild(ta);
     return Promise.resolve();
   };
-  doCopy().then(()=>{
-    btn.innerHTML='<span>✓</span> Copiado';btn.classList.add('ok');
-    showToast('✓ Copiado — pegalo en Messenger',true);
-    setTimeout(()=>{btn.innerHTML='<span>📋</span> Copiar';btn.classList.remove('ok');},2500);
+  doCopy().then(() => {
+    btn.innerHTML = '<span>✓</span> Copiado'; btn.classList.add('ok');
+    showToast('✓ Copiado — pegalo en Messenger', true);
+    setTimeout(() => { btn.innerHTML = '<span>📋</span> Copiar'; btn.classList.remove('ok'); }, 2500);
   });
 }
 
-// ─── MODALES ─────────────────────────────────────────────────────────────────
-function buildEmojiGrid(sel){
-  document.getElementById('emoji-grid').innerHTML=EMOJIS.map(e=>
-    `<div class="emoji-opt ${e===sel?'selected':''}" onclick="selectEmoji('${e}',this)">${e}</div>`
+// ─── MODAL PRODUCTO ──────────────────────────────────────────────────────────
+function buildEmojiGrid(sel) {
+  document.getElementById('emoji-grid').innerHTML = EMOJIS.map(e =>
+    `<div class="emoji-opt ${e === sel ? 'selected' : ''}" onclick="selectEmoji('${e}',this)">${e}</div>`
   ).join('');
 }
-function selectEmoji(e,el){
-  selectedEmoji=e;
-  document.querySelectorAll('.emoji-opt').forEach(x=>x.classList.remove('selected'));
+function selectEmoji(e, el) {
+  selectedEmoji = e;
+  document.querySelectorAll('.emoji-opt').forEach(x => x.classList.remove('selected'));
   el.classList.add('selected');
 }
-function openModalProducto(){
-  editingProductoId=null;selectedEmoji='📦';
-  document.getElementById('mp-title').textContent='Nuevo producto';
-  document.getElementById('mp-nombre').value='';
-  document.getElementById('mp-precio').value='';
+function openModalProducto() {
+  editingProductoId = null; selectedEmoji = '📦';
+  document.getElementById('mp-title').textContent = 'Nuevo producto';
+  document.getElementById('mp-nombre').value = '';
+  document.getElementById('mp-precio').value = '';
   buildEmojiGrid('📦');
   document.getElementById('overlay-producto').classList.add('open');
 }
-function openEditProducto(id){
-  const p=data.productos.find(x=>x.id===id);if(!p)return;
-  editingProductoId=id;selectedEmoji=p.emoji;
-  document.getElementById('mp-title').textContent='Editar producto';
-  document.getElementById('mp-nombre').value=p.nombre;
-  document.getElementById('mp-precio').value=p.precio||'';
+function openEditProducto(id) {
+  const p = productos.find(x => x.id === id); if (!p) return;
+  editingProductoId = id; selectedEmoji = p.emoji;
+  document.getElementById('mp-title').textContent = 'Editar producto';
+  document.getElementById('mp-nombre').value = p.nombre;
+  document.getElementById('mp-precio').value = p.precio || '';
   buildEmojiGrid(p.emoji);
   document.getElementById('overlay-producto').classList.add('open');
 }
-function closeModalProducto(e){
-  if(!e||e.target===document.getElementById('overlay-producto'))
+function closeModalProducto(e) {
+  if (!e || e.target === document.getElementById('overlay-producto'))
     document.getElementById('overlay-producto').classList.remove('open');
 }
-function saveProducto(){
-  const nombre=document.getElementById('mp-nombre').value.trim();
-  const precio=document.getElementById('mp-precio').value.trim();
-  if(!nombre){showToast('⚠️ Escribí el nombre del producto');return;}
-  if(editingProductoId){
-    const p=data.productos.find(x=>x.id===editingProductoId);
-    p.nombre=nombre;p.precio=precio;p.emoji=selectedEmoji;
-    if(currentProductoId===editingProductoId)updateHeaderProducto(p);
-  }else{
-    data.productos.push({id:'p'+Date.now(),nombre,precio,emoji:selectedEmoji,guiones:[]});
+async function saveProducto() {
+  const nombre = document.getElementById('mp-nombre').value.trim();
+  const precio = document.getElementById('mp-precio').value.trim();
+  if (!nombre) { showToast('⚠️ Escribí el nombre del producto'); return; }
+  showLoading(true);
+  const saved = await dbSaveProducto({ id: editingProductoId, nombre, precio, emoji: selectedEmoji });
+  await loadProductos();
+  showLoading(false);
+  document.getElementById('overlay-producto').classList.remove('open');
+  if (currentProductoId === editingProductoId) {
+    const p = productos.find(x => x.id === currentProductoId);
+    if (p) updateHeaderProducto(p);
   }
-  save();document.getElementById('overlay-producto').classList.remove('open');render();
-  showToast(editingProductoId?'✓ Producto actualizado':'✓ Producto creado',true);
+  render();
+  showToast(editingProductoId ? '✓ Producto actualizado' : '✓ Producto creado', true);
 }
-function deleteProducto(id){
-  const p=data.productos.find(x=>x.id===id);
-  if(!confirm(`¿Eliminás "${p.nombre}" y todos sus guiones?`))return;
-  data.productos=data.productos.filter(x=>x.id!==id);
-  save();render();showToast('Producto eliminado');
+async function deleteProducto(id) {
+  const p = productos.find(x => x.id === id);
+  if (!confirm(`¿Eliminás "${p.nombre}" y todos sus guiones?`)) return;
+  showLoading(true);
+  await dbDeleteProducto(id);
+  await loadProductos();
+  showLoading(false);
+  if (currentProductoId === id) goHome();
+  else render();
+  showToast('Producto eliminado');
 }
-function openModalGuion(){
-  editingGuionId=null;
-  document.getElementById('mg-title').textContent='Nuevo guión';
-  document.getElementById('mg-titulo').value='';
-  document.getElementById('mg-fase').value='Primer contacto';
-  document.getElementById('mg-atajo').value='';
-  document.getElementById('mg-texto').value='';
+
+// ─── MODAL GUION ─────────────────────────────────────────────────────────────
+function openModalGuion() {
+  editingGuionId = null;
+  document.getElementById('mg-title').textContent = 'Nuevo guión';
+  document.getElementById('mg-titulo').value = '';
+  document.getElementById('mg-fase').value = 'Primer contacto';
+  document.getElementById('mg-atajo').value = '';
+  document.getElementById('mg-texto').value = '';
   document.getElementById('overlay-guion').classList.add('open');
 }
-function openEditGuion(id){
-  const p=data.productos.find(x=>x.id===currentProductoId);
-  const g=p.guiones.find(x=>x.id===id);if(!g)return;
-  editingGuionId=id;
-  document.getElementById('mg-title').textContent='Editar guión';
-  document.getElementById('mg-titulo').value=g.titulo;
-  document.getElementById('mg-fase').value=g.fase;
-  document.getElementById('mg-atajo').value=g.atajo||'';
-  document.getElementById('mg-texto').value=g.texto;
+function openEditGuion(id) {
+  const p = productos.find(x => x.id === currentProductoId);
+  const g = p.guiones.find(x => x.id === id); if (!g) return;
+  editingGuionId = id;
+  document.getElementById('mg-title').textContent = 'Editar guión';
+  document.getElementById('mg-titulo').value = g.titulo;
+  document.getElementById('mg-fase').value = g.fase;
+  document.getElementById('mg-atajo').value = g.atajo || '';
+  document.getElementById('mg-texto').value = g.texto;
   document.getElementById('overlay-guion').classList.add('open');
 }
-function closeModalGuion(e){
-  if(!e||e.target===document.getElementById('overlay-guion'))
+function closeModalGuion(e) {
+  if (!e || e.target === document.getElementById('overlay-guion'))
     document.getElementById('overlay-guion').classList.remove('open');
 }
-function saveGuion(){
-  const titulo=document.getElementById('mg-titulo').value.trim();
-  const fase=document.getElementById('mg-fase').value;
-  const atajo=document.getElementById('mg-atajo').value.trim();
-  const texto=document.getElementById('mg-texto').value.trim();
-  if(!titulo||!texto){showToast('⚠️ Completá título y texto');return;}
-  const p=data.productos.find(x=>x.id===currentProductoId);
-  if(editingGuionId){
-    const idx=p.guiones.findIndex(x=>x.id===editingGuionId);
-    p.guiones[idx]={...p.guiones[idx],titulo,fase,atajo,texto};
-  }else{
-    p.guiones.push({id:'g'+Date.now(),titulo,fase,atajo,texto});
-  }
-  save();document.getElementById('overlay-guion').classList.remove('open');
-  updateHeaderProducto(p);renderTabs(p);render();
-  showToast(editingGuionId?'✓ Guión actualizado':'✓ Guión creado',true);
+async function saveGuion() {
+  const titulo = document.getElementById('mg-titulo').value.trim();
+  const fase = document.getElementById('mg-fase').value;
+  const atajo = document.getElementById('mg-atajo').value.trim();
+  const texto = document.getElementById('mg-texto').value.trim();
+  if (!titulo || !texto) { showToast('⚠️ Completá título y texto'); return; }
+  showLoading(true);
+  await dbSaveGuion({ id: editingGuionId, titulo, fase, atajo, texto }, currentProductoId);
+  await loadProductos();
+  showLoading(false);
+  document.getElementById('overlay-guion').classList.remove('open');
+  const p = productos.find(x => x.id === currentProductoId);
+  if (p) { updateHeaderProducto(p); renderTabs(p); }
+  render();
+  showToast(editingGuionId ? '✓ Guión actualizado' : '✓ Guión creado', true);
 }
-function deleteGuion(id){
-  if(!confirm('¿Eliminás este guión?'))return;
-  const p=data.productos.find(x=>x.id===currentProductoId);
-  p.guiones=p.guiones.filter(g=>g.id!==id);
-  save();render();showToast('Guión eliminado');
+async function deleteGuion(id) {
+  if (!confirm('¿Eliminás este guión?')) return;
+  showLoading(true);
+  await dbDeleteGuion(id);
+  await loadProductos();
+  showLoading(false);
+  const p = productos.find(x => x.id === currentProductoId);
+  if (p) { updateHeaderProducto(p); renderTabs(p); }
+  render();
+  showToast('Guión eliminado');
 }
 
 // ─── TOAST ───────────────────────────────────────────────────────────────────
-function showToast(msg,success=false){
-  const t=document.getElementById('toast');
-  t.textContent=msg;t.className='toast'+(success?' success':'');
-  void t.offsetWidth;t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2500);
+function showToast(msg, success = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.className = 'toast' + (success ? ' success' : '');
+  void t.offsetWidth; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ─── SERVICE WORKER ───────────────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').then(reg => {
+    reg.update();
+    reg.addEventListener('updatefound', () => {
+      newWorker = reg.installing;
+      newWorker.addEventListener('statechange', () => {
+        if (newWorker.state === 'installed' && navigator.serviceWorker.controller)
+          document.getElementById('update-banner').classList.add('visible');
+      });
+    });
+  });
+  navigator.serviceWorker.addEventListener('controllerchange', () => window.location.reload());
+}
+function applyUpdate() {
+  if (newWorker) newWorker.postMessage('SKIP_WAITING');
+  else window.location.reload();
 }
 
 // ─── PWA INSTALL ─────────────────────────────────────────────────────────────
-let deferredPrompt=null;
-window.addEventListener('beforeinstallprompt',e=>{
-  e.preventDefault();deferredPrompt=e;
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault(); deferredPrompt = e;
   document.getElementById('fab-install').classList.add('visible');
 });
-function installApp(){
-  if(!deferredPrompt)return;
+function installApp() {
+  if (!deferredPrompt) return;
   deferredPrompt.prompt();
-  deferredPrompt.userChoice.then(()=>{deferredPrompt=null;document.getElementById('fab-install').classList.remove('visible');});
+  deferredPrompt.userChoice.then(() => { deferredPrompt = null; document.getElementById('fab-install').classList.remove('visible'); });
 }
-window.addEventListener('appinstalled',()=>{
+window.addEventListener('appinstalled', () => {
   document.getElementById('fab-install').classList.remove('visible');
-  showToast('✓ App instalada 🎉',true);
+  showToast('✓ App instalada 🎉', true);
 });
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
-load();
-document.getElementById('header-center').innerHTML='<div class="logo-text">⚡ Guiones</div><div class="logo-sub">SALES CLOSER v'+APP_VERSION+'</div>';
-render();
+initAuth();
 </script>
 </body>
 </html>

@@ -427,16 +427,27 @@ async function seedDefaultData() {
 }
 
 async function loadProductos() {
-  const { data: prods } = await sb.from('productos')
-    .select('*, guiones(*)')
+  // Traer productos
+  const { data: prods, error: ep } = await sb.from('productos')
+    .select('*')
     .eq('user_id', currentUser.id)
     .order('orden', { ascending: true });
-  if (prods) {
-    productos = prods.map(p => ({
-      ...p,
-      guiones: (p.guiones || []).sort((a, b) => a.orden - b.orden)
-    }));
-  }
+
+  if (ep || !prods) { productos = []; return; }
+
+  // Traer todos los guiones del usuario de una sola vez
+  const { data: guiones, error: eg } = await sb.from('guiones')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('orden', { ascending: true });
+
+  const guionesData = guiones || [];
+
+  // Combinar: cada producto con sus guiones
+  productos = prods.map(p => ({
+    ...p,
+    guiones: guionesData.filter(g => g.producto_id === p.id)
+  }));
 }
 
 async function dbSaveProducto(p) {

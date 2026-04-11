@@ -394,11 +394,13 @@ async function onLogin(user) {
 
 // ─── SUPABASE DB ──────────────────────────────────────────────────────────────
 async function ensureTablas() {
-  // Verificar si el usuario ya tiene productos
   const { data, error } = await sb.from('productos').select('id').eq('user_id', currentUser.id).limit(1);
+  console.log('[ensureTablas] data:', data, 'error:', error);
   if (!error && (!data || data.length === 0)) {
-    // Primera vez — cargar productos por defecto
+    console.log('[ensureTablas] primera vez — cargando datos por defecto');
     await seedDefaultData();
+  } else {
+    console.log('[ensureTablas] usuario ya tiene datos, saltando seed');
   }
 }
 
@@ -427,27 +429,32 @@ async function seedDefaultData() {
 }
 
 async function loadProductos() {
-  // Traer productos
-  const { data: prods, error: ep } = await sb.from('productos')
-    .select('*')
-    .eq('user_id', currentUser.id)
-    .order('orden', { ascending: true });
+  productos = [];
 
-  if (ep || !prods) { productos = []; return; }
+  const [prodsRes, guionesRes] = await Promise.all([
+    sb.from('productos').select('*').eq('user_id', currentUser.id).order('orden', { ascending: true }),
+    sb.from('guiones').select('*').eq('user_id', currentUser.id).order('orden', { ascending: true })
+  ]);
 
-  // Traer todos los guiones del usuario de una sola vez
-  const { data: guiones, error: eg } = await sb.from('guiones')
-    .select('*')
-    .eq('user_id', currentUser.id)
-    .order('orden', { ascending: true });
+  if (prodsRes.error || !prodsRes.data) {
+    console.error('Error cargando productos:', prodsRes.error);
+    return;
+  }
 
-  const guionesData = guiones || [];
+  const prods = prodsRes.data;
+  const guionesData = guionesRes.data || [];
 
-  // Combinar: cada producto con sus guiones (IDs son UUID strings)
-  productos = prods.map(p => ({
-    ...p,
-    guiones: guionesData.filter(g => String(g.producto_id) === String(p.id))
-  }));
+  console.log('[loadProductos] productos:', prods.length, '| guiones:', guionesData.length);
+  if (prods.length > 0) console.log('[loadProductos] ejemplo ID producto:', prods[0].id, typeof prods[0].id);
+  if (guionesData.length > 0) console.log('[loadProductos] ejemplo producto_id guion:', guionesData[0].producto_id, typeof guionesData[0].producto_id);
+
+  productos = prods.map(p => {
+    const gs = guionesData.filter(g => g.producto_id === p.id);
+    console.log('[loadProductos]', p.nombre, '->', gs.length, 'guiones');
+    return { ...p, guiones: gs };
+  });
+
+  console.log('[loadProductos] productos cargados:', productos.map(p => p.nombre + ':' + p.guiones.length));
 }
 
 async function dbSaveProducto(p) {

@@ -449,7 +449,9 @@ async function loadProductos() {
   if (guionesData.length > 0) console.log('[loadProductos] ejemplo producto_id guion:', guionesData[0].producto_id, typeof guionesData[0].producto_id);
 
   productos = prods.map(p => {
-    const gs = guionesData.filter(g => g.producto_id === p.id);
+    console.log("producto:", p.id, typeof p.id);
+console.log("guion:", guionesData[0]?.producto_id, typeof guionesData[0]?.producto_id);
+    const gs = guionesData.filter(g => g.producto_id == p.id);
     console.log('[loadProductos]', p.nombre, '->', gs.length, 'guiones');
     return { ...p, guiones: gs };
   });

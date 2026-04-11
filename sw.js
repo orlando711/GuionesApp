@@ -25,7 +25,18 @@ self.addEventListener('activate', e => {
 
 // Fetch — red primero, caché como fallback
 self.addEventListener('fetch', e => {
+
+  // 🚫 NO cachear Supabase (clave)
+  if (e.request.url.includes('supabase.co')) {
+    return;
+  }
+
   e.respondWith(
+    caches.match(e.request).then(res => {
+      return res || fetch(e.request);
+    })
+  );
+});  e.respondWith(
     fetch(e.request)
       .then(res => {
         // Si la respuesta es válida, actualizá el caché

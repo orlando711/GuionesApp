@@ -272,7 +272,7 @@ body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-he
 <div class="fab-install" id="fab-install" onclick="installApp()">📲 Instalar app</div>
 
 <script>
-const APP_VERSION = '3.0.0';
+const APP_VERSION = '3.1.0';
 const SUPABASE_URL = 'https://lhogzvgjwxwqtuerhorg.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxob2d6dmdqd3h3cXR1ZXJob3JnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU3MjExNTIsImV4cCI6MjA5MTI5NzE1Mn0.QI673m9eu1oyAJ6PPaVCa6ocuReNsKTdcsfr68EvlcA';
 const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -449,9 +449,7 @@ async function loadProductos() {
   if (guionesData.length > 0) console.log('[loadProductos] ejemplo producto_id guion:', guionesData[0].producto_id, typeof guionesData[0].producto_id);
 
   productos = prods.map(p => {
-    console.log("producto:", p.id, typeof p.id);
-console.log("guion:", guionesData[0]?.producto_id, typeof guionesData[0]?.producto_id);
-    const gs = guionesData.filter(g => g.producto_id == p.id);
+    const gs = guionesData.filter(g => Number(g.producto_id) === Number(p.id));
     console.log('[loadProductos]', p.nombre, '->', gs.length, 'guiones');
     return { ...p, guiones: gs };
   });
@@ -460,7 +458,7 @@ console.log("guion:", guionesData[0]?.producto_id, typeof guionesData[0]?.produc
 }
 
 async function dbSaveProducto(p) {
-  if (p.id && p.id !== null) {
+  if (p.id && p.id !== null && p.id !== undefined && p.id !== 'undefined') {
     const { data } = await sb.from('productos').update({
       nombre: p.nombre, precio: p.precio, emoji: p.emoji
     }).eq('id', p.id).eq('user_id', currentUser.id).select().single();
@@ -480,7 +478,7 @@ async function dbDeleteProducto(id) {
 }
 
 async function dbSaveGuion(g, productoId) {
-  if (g.id && g.id !== null) {
+  if (g.id && g.id !== null && g.id !== undefined && g.id !== 'undefined') {
     const { data } = await sb.from('guiones').update({
       titulo: g.titulo, fase: g.fase, atajo: g.atajo, texto: g.texto
     }).eq('id', g.id).eq('user_id', currentUser.id).select().single();
@@ -540,7 +538,7 @@ function goHome() {
 }
 
 function goProducto(id) {
-  currentProductoId = id; activeFilter = 'Todos';
+  currentProductoId = Number(id); activeFilter = 'Todos';
   document.getElementById('search').value = '';
   document.getElementById('back-btn').classList.add('visible');
   document.getElementById('action-btn').textContent = '+ Guión';
@@ -578,7 +576,7 @@ function renderHome() {
   }
   let html = '<div class="section-label">Mis productos</div><div class="products-grid">';
   filtered.forEach((p, i) => {
-    html += `<div class="product-card" style="animation-delay:${i * 50}ms" onclick="goProducto(${p.id})">
+    html += `<div class="product-card" style="animation-delay:${i * 50}ms" onclick="goProducto('${p.id}')">
       <div class="product-emoji">${p.emoji}</div>
       <div class="product-info">
         <div class="product-name">${p.nombre}</div>
@@ -588,8 +586,8 @@ function renderHome() {
         </div>
       </div>
       <div class="product-actions" onclick="event.stopPropagation()">
-        <button class="btn-icon" onclick="openEditProducto(${p.id})">✏️</button>
-        <button class="btn-icon danger" onclick="deleteProducto(${p.id})">🗑</button>
+        <button class="btn-icon" onclick="openEditProducto('${p.id}')">✏️</button>
+        <button class="btn-icon danger" onclick="deleteProducto('${p.id}')">🗑</button>
       </div>
       <span class="product-arrow">›</span>
     </div>`;
@@ -615,7 +613,7 @@ function renderGuiones(p) {
     html += `<div class="section-label">${fase}</div>`;
     groups[fase].forEach((g, i) => {
       html += `<div class="card" id="card-${g.id}" style="animation-delay:${i * 40}ms">
-        <div class="card-head" onclick="toggleCard(${g.id})">
+        <div class="card-head" onclick="toggleCard('${g.id}')">
           <div class="card-meta">
             <div class="card-title">${g.titulo}</div>
             <div class="card-tags">
@@ -628,9 +626,9 @@ function renderGuiones(p) {
         <div class="card-body">
           <div class="card-text" id="ct-${g.id}">${g.texto}</div>
           <div class="card-actions">
-            <button class="btn-copy" id="btn-${g.id}" onclick="copiar(${g.id})"><span>📋</span> Copiar</button>
-            <button class="btn-sm" onclick="openEditGuion(${g.id})">✏️</button>
-            <button class="btn-sm danger" onclick="deleteGuion(${g.id})">🗑</button>
+            <button class="btn-copy" id="btn-${g.id}" onclick="copiar('${g.id}')"><span>📋</span> Copiar</button>
+            <button class="btn-sm" onclick="openEditGuion('${g.id}')">✏️</button>
+            <button class="btn-sm danger" onclick="deleteGuion('${g.id}')">🗑</button>
           </div>
         </div>
       </div>`;
@@ -642,6 +640,7 @@ function toggleCard(id) { document.getElementById('card-' + id)?.classList.toggl
 
 // ─── COPY ────────────────────────────────────────────────────────────────────
 function copiar(id) {
+  id = Number(id);
   const el = document.getElementById('ct-' + id);
   const btn = document.getElementById('btn-' + id);
   const texto = el.innerText;
@@ -678,6 +677,7 @@ function openModalProducto() {
   document.getElementById('overlay-producto').classList.add('open');
 }
 function openEditProducto(id) {
+  id = Number(id);
   const p = productos.find(x => x.id === id); if (!p) return;
   editingProductoId = id; selectedEmoji = p.emoji;
   document.getElementById('mp-title').textContent = 'Editar producto';
@@ -707,6 +707,7 @@ async function saveProducto() {
   showToast(editingProductoId ? '✓ Producto actualizado' : '✓ Producto creado', true);
 }
 async function deleteProducto(id) {
+  id = Number(id);
   const p = productos.find(x => x.id === id);
   if (!confirm(`¿Eliminás "${p.nombre}" y todos sus guiones?`)) return;
   showLoading(true);
@@ -729,6 +730,7 @@ function openModalGuion() {
   document.getElementById('overlay-guion').classList.add('open');
 }
 function openEditGuion(id) {
+  id = Number(id);
   const p = productos.find(x => x.id === currentProductoId);
   const g = p.guiones.find(x => x.id === id); if (!g) return;
   editingGuionId = id;
@@ -760,6 +762,7 @@ async function saveGuion() {
   showToast(editingGuionId ? '✓ Guión actualizado' : '✓ Guión creado', true);
 }
 async function deleteGuion(id) {
+  id = Number(id);
   if (!confirm('¿Eliminás este guión?')) return;
   showLoading(true);
   await dbDeleteGuion(id);
